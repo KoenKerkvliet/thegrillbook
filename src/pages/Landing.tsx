@@ -30,8 +30,12 @@ function Logo() {
 function RecipePreviewCard() {
   return (
     <div className="rounded-lg overflow-hidden border border-line bg-surface">
-      <div className="aspect-[4/3] flex items-center justify-center text-cream/30 text-sm">
-        Foto: donker keukenshot, vlees op vuur
+      <div className="aspect-[4/3] overflow-hidden">
+        <img
+          src={`${import.meta.env.BASE_URL}images/hero-steak.png`}
+          alt="Steak op de grill, boven de gloeiende kolen"
+          className="w-full h-full object-cover"
+        />
       </div>
       <div className="p-4">
         <p className="text-xs text-cream/50 mb-1">Van Joost — 2 dagen terug</p>
