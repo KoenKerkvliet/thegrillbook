@@ -3,12 +3,17 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FeedRecipeCard, type FeedRecipeData } from '../../components/FeedRecipeCard'
+import { MomentCard, type MomentCardData } from '../../components/MomentCard'
 import { FollowButton } from '../../components/FollowButton'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
 
 type Stats = { recipes: number; privateRecipes: number; followers: number }
+
+type FeedItem =
+  | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData }
+  | { kind: 'moment'; created_at: string; moment: MomentCardData }
 
 function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
   if (chefs.length === 0) return null
@@ -65,7 +70,7 @@ function KookboekStats({ stats }: { stats: Stats | null }) {
 
 export default function Feed() {
   const { user } = useAuth()
-  const [recipes, setRecipes] = useState<FeedRecipeData[] | null>(null)
+  const [items, setItems] = useState<FeedItem[] | null>(null)
   const [followingCount, setFollowingCount] = useState<number | null>(null)
   const [suggested, setSuggested] = useState<Profile[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -96,17 +101,35 @@ export default function Feed() {
         owner_id: string
         profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
       }> = []
+      let momentRows: Array<{
+        id: string
+        photo_url: string
+        caption: string | null
+        created_at: string
+        owner_id: string
+        profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
+      }> = []
 
       if (followingIds.length > 0) {
-        const { data } = await supabase
-          .from('recipes')
-          .select(
-            'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)',
-          )
-          .eq('is_public', true)
-          .in('owner_id', followingIds)
-          .order('created_at', { ascending: false })
-        recipeRows = data ?? []
+        const [recipesRes, momentsRes] = await Promise.all([
+          supabase
+            .from('recipes')
+            .select(
+              'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)',
+            )
+            .eq('is_public', true)
+            .in('owner_id', followingIds)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('moments')
+            .select(
+              'id, photo_url, caption, created_at, owner_id, profiles!moments_owner_id_fkey(username, display_name, avatar_url)',
+            )
+            .in('owner_id', followingIds)
+            .order('created_at', { ascending: false }),
+        ])
+        recipeRows = recipesRes.data ?? []
+        momentRows = momentsRes.data ?? []
       }
 
       const recipeIds = recipeRows.map((r) => r.id)
@@ -117,10 +140,12 @@ export default function Feed() {
 
       if (cancelled) return
 
-      setRecipes(
-        recipeRows.map((r) => {
-          const likesForRecipe = likeRows.filter((l) => l.recipe_id === r.id)
-          return {
+      const recipeItems: FeedItem[] = recipeRows.map((r) => {
+        const likesForRecipe = likeRows.filter((l) => l.recipe_id === r.id)
+        return {
+          kind: 'recipe',
+          created_at: r.created_at,
+          recipe: {
             id: r.id,
             title: r.title,
             description: r.description,
@@ -134,8 +159,28 @@ export default function Feed() {
             ownerAvatarUrl: r.profiles?.avatar_url ?? null,
             likeCount: likesForRecipe.length,
             likedByMe: likesForRecipe.some((l) => l.user_id === user!.id),
-          }
-        }),
+          },
+        }
+      })
+
+      const momentItems: FeedItem[] = momentRows.map((m) => ({
+        kind: 'moment',
+        created_at: m.created_at,
+        moment: {
+          id: m.id,
+          photo_url: m.photo_url,
+          caption: m.caption,
+          created_at: m.created_at,
+          ownerUsername: m.profiles?.username ?? '?',
+          ownerDisplayName: m.profiles?.display_name ?? null,
+          ownerAvatarUrl: m.profiles?.avatar_url ?? null,
+        },
+      }))
+
+      setItems(
+        [...recipeItems, ...momentItems].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        ),
       )
 
       const excludeIds = [user!.id, ...followingIds]
@@ -167,7 +212,7 @@ export default function Feed() {
     }
   }, [user])
 
-  if (recipes === null) {
+  if (items === null) {
     return <p className="text-cream/50">Feed laden...</p>
   }
 
@@ -176,7 +221,7 @@ export default function Feed() {
       <div className="text-center py-20">
         <p className="font-display text-2xl mb-3">Je feed is nog leeg</p>
         <p className="text-cream/60 mb-6">
-          Volg collega chefs om hun openbare recepten hier te zien verschijnen.
+          Volg collega chefs om hun openbare recepten en momenten hier te zien verschijnen.
         </p>
         <Link
           to="/app/chefs"
@@ -185,13 +230,19 @@ export default function Feed() {
           Zoek collega chefs
         </Link>
       </div>
-    ) : recipes.length === 0 ? (
-      <p className="text-cream/60">De chefs die je volgt hebben nog geen openbare recepten gedeeld.</p>
+    ) : items.length === 0 ? (
+      <p className="text-cream/60">
+        De chefs die je volgt hebben nog niks gedeeld — geen recepten, geen momenten.
+      </p>
     ) : (
       <div className="flex flex-col gap-6">
-        {recipes.map((recipe) => (
-          <FeedRecipeCard key={recipe.id} recipe={recipe} />
-        ))}
+        {items.map((item) =>
+          item.kind === 'recipe' ? (
+            <FeedRecipeCard key={`recipe-${item.recipe.id}`} recipe={item.recipe} />
+          ) : (
+            <MomentCard key={`moment-${item.moment.id}`} moment={item.moment} />
+          ),
+        )}
       </div>
     )
 

@@ -108,6 +108,12 @@ export default function AppShell() {
 
           <div className="flex items-center gap-4 shrink-0">
             <NavLink
+              to="/app/moment/nieuw"
+              className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
+            >
+              🔥 Vuur aan
+            </NavLink>
+            <NavLink
               to="/app/kookboek/nieuw"
               className="bg-flame hover:bg-flame-dark transition-colors text-ink text-sm font-semibold px-3 py-1.5 rounded-md"
             >

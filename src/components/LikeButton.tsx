@@ -34,18 +34,21 @@ export function LikeButton({ recipeId, initiallyLiked, initialCount }: Props) {
     setBusy(false)
   }
 
+  const onFire = count >= 10
+
   return (
     <button
       type="button"
       onClick={toggle}
       disabled={busy}
+      title={liked ? 'Staat in vuur en vlam' : 'Zet in vuur en vlam'}
       className={`flex items-center gap-1.5 text-sm rounded-md px-3 py-1.5 border transition-colors ${
         liked
           ? 'bg-flame border-flame text-ink'
           : 'border-line text-cream/70 hover:border-cream/40'
       }`}
     >
-      <span>{liked ? '♥' : '♡'}</span>
+      <span className={onFire ? 'animate-pulse' : ''}>🔥</span>
       <span>{count}</span>
     </button>
   )

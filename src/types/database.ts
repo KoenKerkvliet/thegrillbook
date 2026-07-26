@@ -47,6 +47,38 @@ export type Database = {
           },
         ]
       }
+      moments: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          photo_url: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          photo_url: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moments_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
