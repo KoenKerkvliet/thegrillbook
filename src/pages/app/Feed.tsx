@@ -13,7 +13,7 @@ type Stats = { recipes: number; privateRecipes: number; followers: number }
 
 type FeedItem =
   | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData }
-  | { kind: 'moment'; created_at: string; moment: MomentCardData }
+  | { kind: 'moment'; created_at: string; moment: MomentCardData; isOwner: boolean }
 
 function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
   if (chefs.length === 0) return null
@@ -103,34 +103,36 @@ export default function Feed() {
       }> = []
       let momentRows: Array<{
         id: string
-        photo_url: string
+        photo_url: string | null
         caption: string | null
         created_at: string
         owner_id: string
         profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
       }> = []
 
+      // Recipes: only from chefs you follow — your own recipes live in Mijn kookboek.
       if (followingIds.length > 0) {
-        const [recipesRes, momentsRes] = await Promise.all([
-          supabase
-            .from('recipes')
-            .select(
-              'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)',
-            )
-            .eq('is_public', true)
-            .in('owner_id', followingIds)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('moments')
-            .select(
-              'id, photo_url, caption, created_at, owner_id, profiles!moments_owner_id_fkey(username, display_name, avatar_url)',
-            )
-            .in('owner_id', followingIds)
-            .order('created_at', { ascending: false }),
-        ])
-        recipeRows = recipesRes.data ?? []
-        momentRows = momentsRes.data ?? []
+        const { data } = await supabase
+          .from('recipes')
+          .select(
+            'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)',
+          )
+          .eq('is_public', true)
+          .in('owner_id', followingIds)
+          .order('created_at', { ascending: false })
+        recipeRows = data ?? []
       }
+
+      // Moments: your own + chefs you follow — moments only live in the feed, nowhere else.
+      const momentOwnerIds = [user!.id, ...followingIds]
+      const { data: momentData } = await supabase
+        .from('moments')
+        .select(
+          'id, photo_url, caption, created_at, owner_id, profiles!moments_owner_id_fkey(username, display_name, avatar_url)',
+        )
+        .in('owner_id', momentOwnerIds)
+        .order('created_at', { ascending: false })
+      momentRows = momentData ?? []
 
       const recipeIds = recipeRows.map((r) => r.id)
       const likeRows = recipeIds.length
@@ -166,6 +168,7 @@ export default function Feed() {
       const momentItems: FeedItem[] = momentRows.map((m) => ({
         kind: 'moment',
         created_at: m.created_at,
+        isOwner: m.owner_id === user!.id,
         moment: {
           id: m.id,
           photo_url: m.photo_url,
@@ -212,35 +215,48 @@ export default function Feed() {
     }
   }, [user])
 
+  async function handleDeleteMoment(id: string) {
+    setItems((prev) => prev && prev.filter((item) => !(item.kind === 'moment' && item.moment.id === id)))
+    await supabase.from('moments').delete().eq('id', id)
+  }
+
   if (items === null) {
     return <p className="text-cream/50">Feed laden...</p>
   }
 
   const feedColumn =
-    followingCount === 0 ? (
-      <div className="text-center py-20">
-        <p className="font-display text-2xl mb-3">Je feed is nog leeg</p>
-        <p className="text-cream/60 mb-6">
-          Volg collega chefs om hun openbare recepten en momenten hier te zien verschijnen.
+    items.length === 0 ? (
+      followingCount === 0 ? (
+        <div className="text-center py-20">
+          <p className="font-display text-2xl mb-3">Je feed is nog leeg</p>
+          <p className="text-cream/60 mb-6">
+            Volg collega chefs om hun openbare recepten en momenten hier te zien verschijnen, of log
+            zelf een BBQ-moment.
+          </p>
+          <Link
+            to="/app/chefs"
+            className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-5 py-2.5 rounded-md inline-block"
+          >
+            Zoek collega chefs
+          </Link>
+        </div>
+      ) : (
+        <p className="text-cream/60">
+          De chefs die je volgt hebben nog niks gedeeld — geen recepten, geen momenten.
         </p>
-        <Link
-          to="/app/chefs"
-          className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-5 py-2.5 rounded-md inline-block"
-        >
-          Zoek collega chefs
-        </Link>
-      </div>
-    ) : items.length === 0 ? (
-      <p className="text-cream/60">
-        De chefs die je volgt hebben nog niks gedeeld — geen recepten, geen momenten.
-      </p>
+      )
     ) : (
       <div className="flex flex-col gap-6">
         {items.map((item) =>
           item.kind === 'recipe' ? (
             <FeedRecipeCard key={`recipe-${item.recipe.id}`} recipe={item.recipe} />
           ) : (
-            <MomentCard key={`moment-${item.moment.id}`} moment={item.moment} />
+            <MomentCard
+              key={`moment-${item.moment.id}`}
+              moment={item.moment}
+              isOwner={item.isOwner}
+              onDelete={handleDeleteMoment}
+            />
           ),
         )}
       </div>

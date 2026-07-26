@@ -2,7 +2,7 @@ import { relativeTime } from '../lib/relativeTime'
 
 export type MomentCardData = {
   id: string
-  photo_url: string
+  photo_url: string | null
   caption: string | null
   created_at: string
   ownerUsername: string
@@ -10,9 +10,15 @@ export type MomentCardData = {
   ownerAvatarUrl: string | null
 }
 
-export function MomentCard({ moment }: { moment: MomentCardData }) {
+type Props = {
+  moment: MomentCardData
+  isOwner?: boolean
+  onDelete?: (id: string) => void
+}
+
+export function MomentCard({ moment, isOwner, onDelete }: Props) {
   return (
-    <article className="bg-surface border border-line">
+    <article className="bg-surface border border-line relative">
       <div className="flex items-center gap-3 px-5 py-4">
         <div className="w-10 h-10 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
           {moment.ownerAvatarUrl ? (
@@ -32,15 +38,35 @@ export function MomentCard({ moment }: { moment: MomentCardData }) {
             @{moment.ownerUsername} · {relativeTime(moment.created_at)}
           </p>
         </div>
+        {isOwner && onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(moment.id)}
+            aria-label="Moment verwijderen"
+            className="text-cream/30 hover:text-flame shrink-0"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
-      <div className="aspect-square bg-surface-2 overflow-hidden">
-        <img src={moment.photo_url} alt="" className="w-full h-full object-cover" />
-      </div>
+      {moment.photo_url && (
+        <div className="aspect-square bg-surface-2 overflow-hidden">
+          <img src={moment.photo_url} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
 
       {moment.caption && (
         <div className="p-5">
-          <p className="text-cream/80 text-sm leading-relaxed">{moment.caption}</p>
+          <p
+            className={
+              moment.photo_url
+                ? 'text-cream/80 text-sm leading-relaxed'
+                : 'font-display text-xl leading-snug'
+            }
+          >
+            {moment.caption}
+          </p>
         </div>
       )}
     </article>

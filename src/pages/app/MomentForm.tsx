@@ -39,8 +39,8 @@ export default function MomentForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!user) return
-    if (!photoUrl) {
-      setError('Voeg een foto toe om te laten zien dat het vuur brandt.')
+    if (!photoUrl && !caption.trim()) {
+      setError('Voeg een foto of een tekstje toe.')
       return
     }
     setError(null)
@@ -60,9 +60,7 @@ export default function MomentForm() {
     return (
       <div className="max-w-md text-center py-10">
         <p className="font-display text-3xl mb-4">🔥 Vuur aan!</p>
-        <p className="text-cream/70 mb-6">
-          Je moment staat in de feed van je collega chefs.
-        </p>
+        <p className="text-cream/70 mb-6">Je moment staat in de feed.</p>
         <div className="flex gap-3 justify-center">
           <button
             type="button"
@@ -96,9 +94,7 @@ export default function MomentForm() {
       </div>
 
       <div>
-        <label className="block text-sm text-cream/60 mb-2">
-          Foto <span className="text-flame">*</span>
-        </label>
+        <label className="block text-sm text-cream/60 mb-2">Foto (optioneel)</label>
         {photoUrl && (
           <img
             src={photoUrl}
@@ -129,7 +125,7 @@ export default function MomentForm() {
 
       <button
         type="submit"
-        disabled={saving || uploading || !photoUrl}
+        disabled={saving || uploading || (!photoUrl && !caption.trim())}
         className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md py-2.5 disabled:opacity-50"
       >
         {saving ? 'Bezig...' : 'Delen'}

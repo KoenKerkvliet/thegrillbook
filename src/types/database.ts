@@ -53,21 +53,21 @@ export type Database = {
           created_at: string
           id: string
           owner_id: string
-          photo_url: string
+          photo_url: string | null
         }
         Insert: {
           caption?: string | null
           created_at?: string
           id?: string
           owner_id: string
-          photo_url: string
+          photo_url?: string | null
         }
         Update: {
           caption?: string | null
           created_at?: string
           id?: string
           owner_id?: string
-          photo_url?: string
+          photo_url?: string | null
         }
         Relationships: [
           {
