@@ -22,7 +22,7 @@ export default function AppShell() {
       <header className="border-b border-line">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
           <NavLink to="/app" className="shrink-0">
-            <Logo className="h-6" />
+            <Logo className="h-10" />
           </NavLink>
 
           <nav className="flex items-center gap-6 text-sm overflow-x-auto">

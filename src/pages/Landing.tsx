@@ -38,7 +38,7 @@ export default function Landing() {
     <div className="bg-ink text-cream">
       <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
         <Link to="/">
-          <Logo className="h-6" />
+          <Logo className="h-10" />
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm tracking-wide text-cream/70">
           <a href="#hoe-het-werkt" className="hover:text-cream">
