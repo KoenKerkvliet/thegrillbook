@@ -73,7 +73,7 @@ export default function Signup() {
     <div className="min-h-svh bg-ink text-cream flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
         <Link to="/" className="flex justify-center mb-10">
-          <Logo className="text-xl" />
+          <Logo className="h-10" />
         </Link>
 
         <h1 className="font-display text-3xl mb-8 text-center">Maak een account</h1>
