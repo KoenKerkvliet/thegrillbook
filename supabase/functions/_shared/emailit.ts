@@ -1,5 +1,5 @@
 const EMAILIT_API_KEY = Deno.env.get('EMAILIT_API_KEY')!
-const EMAILIT_FROM = Deno.env.get('EMAILIT_FROM') || 'BBQHeros <noreply@thegrillbook.nl>'
+const EMAILIT_FROM = Deno.env.get('EMAILIT_FROM') || 'BBQHeros <noreply@bbqheros.nl>'
 const EMAILIT_REPLY_TO = Deno.env.get('EMAILIT_REPLY_TO') || ''
 
 export interface EmailitPayload {

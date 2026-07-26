@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from './_shared/cors.ts'
 import { sendEmail } from './_shared/emailit.ts'
 
-const SITE_URL = Deno.env.get('SITE_URL') || 'https://thegrillbook.nl'
+const SITE_URL = Deno.env.get('SITE_URL') || 'https://bbqheros.nl'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -49,7 +49,7 @@ function verificationEmailHtml(link: string): string {
           </tr>
           <tr>
             <td bgcolor="#F2EDE4" style="background:#F2EDE4;padding:16px 32px;color:#79746E;font-size:12px;text-align:center;">
-              &copy; ${new Date().getFullYear()} BBQHeros | thegrillbook.nl
+              &copy; ${new Date().getFullYear()} BBQHeros | bbqheros.nl
             </td>
           </tr>
         </table>
@@ -71,7 +71,7 @@ Met vriendelijke groet,
 BBQHeros
 
 --
-(c) ${new Date().getFullYear()} BBQHeros | thegrillbook.nl`
+(c) ${new Date().getFullYear()} BBQHeros | bbqheros.nl`
 }
 
 serve(async (req) => {
