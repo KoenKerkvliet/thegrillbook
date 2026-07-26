@@ -10,6 +10,7 @@ export type RecipeCardData = {
   rating: number | null
   is_public: boolean
   ownerUsername?: string
+  original_owner_username?: string | null
 }
 
 export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
@@ -39,6 +40,11 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
           {recipe.cook_time_minutes != null && <span>{recipe.cook_time_minutes}min</span>}
           {recipe.servings != null && <span>{recipe.servings} pers.</span>}
         </div>
+        {recipe.original_owner_username && (
+          <p className="text-[11px] text-cream/40 mt-2">
+            Origineel van @{recipe.original_owner_username}
+          </p>
+        )}
         {!recipe.is_public && (
           <span className="inline-block mt-2 text-[10px] tracking-wide text-cream/40 border border-line rounded px-1.5 py-0.5">
             PRIVÉ

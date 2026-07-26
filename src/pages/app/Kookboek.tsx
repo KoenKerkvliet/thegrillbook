@@ -14,7 +14,9 @@ export default function Kookboek() {
 
     supabase
       .from('recipes')
-      .select('id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public')
+      .select(
+        'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username',
+      )
       .eq('owner_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => {

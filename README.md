@@ -1,4 +1,4 @@
-# TheGrillBook — kook je eigen shit
+# BBQHeros — kook je eigen shit
 
 Sociaal, besloten kookboek voor BBQ-liefhebbers. Log je eigen recepten (foto, ingrediënten,
 stappen, sterren, privénotities), hou ze privé of deel ze met je Collega chefs, en volg wie kan

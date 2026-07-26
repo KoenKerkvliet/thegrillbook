@@ -34,7 +34,7 @@ function passwordResetEmailHtml(link: string): string {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background:#ffffff;max-width:600px;width:100%;">
           <tr>
             <td bgcolor="#0B0B0B" style="background:#0B0B0B;padding:28px 32px;">
-              <span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:22px;letter-spacing:1px;color:#F2EDE4;">THE<span style="color:#FF5B14;">GRILL</span>BOOK</span>
+              <span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:22px;letter-spacing:1px;color:#F2EDE4;">BBQ<span style="color:#FF5B14;">HEROS</span></span>
             </td>
           </tr>
           <tr>
@@ -49,7 +49,7 @@ function passwordResetEmailHtml(link: string): string {
           </tr>
           <tr>
             <td bgcolor="#F2EDE4" style="background:#F2EDE4;padding:16px 32px;color:#79746E;font-size:12px;text-align:center;">
-              &copy; ${new Date().getFullYear()} TheGrillBook | thegrillbook.nl
+              &copy; ${new Date().getFullYear()} BBQHeros | thegrillbook.nl
             </td>
           </tr>
         </table>
@@ -68,10 +68,10 @@ Je hebt gevraagd om je wachtwoord opnieuw in te stellen. Klik op de link hierond
 ${link}
 
 Met vriendelijke groet,
-TheGrillBook
+BBQHeros
 
 --
-(c) ${new Date().getFullYear()} TheGrillBook | thegrillbook.nl`
+(c) ${new Date().getFullYear()} BBQHeros | thegrillbook.nl`
 }
 
 serve(async (req) => {

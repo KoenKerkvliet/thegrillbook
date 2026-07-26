@@ -34,13 +34,13 @@ function verificationEmailHtml(link: string): string {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background:#ffffff;max-width:600px;width:100%;">
           <tr>
             <td bgcolor="#0B0B0B" style="background:#0B0B0B;padding:28px 32px;">
-              <span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:22px;letter-spacing:1px;color:#F2EDE4;">THE<span style="color:#FF5B14;">GRILL</span>BOOK</span>
+              <span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:22px;letter-spacing:1px;color:#F2EDE4;">BBQ<span style="color:#FF5B14;">HEROS</span></span>
             </td>
           </tr>
           <tr>
             <td style="padding:32px;color:#1a1a1a;font-size:15px;line-height:1.6;">
               <h1 style="margin:0 0 16px;font-size:20px;color:#0B0B0B;">Bevestig je e-mailadres</h1>
-              <p style="margin:0 0 24px;">Hoi,<br>Bedankt voor je registratie bij TheGrillBook. Klik op de knop hieronder om je e-mailadres te bevestigen en je kookboek te openen.</p>
+              <p style="margin:0 0 24px;">Hoi,<br>Bedankt voor je registratie bij BBQHeros. Klik op de knop hieronder om je e-mailadres te bevestigen en je kookboek te openen.</p>
               <p style="margin:0 0 24px;text-align:center;">
                 <a href="${link}" style="background:#FF5B14;color:#0B0B0B;padding:14px 28px;text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold;">Bevestig e-mailadres</a>
               </p>
@@ -49,7 +49,7 @@ function verificationEmailHtml(link: string): string {
           </tr>
           <tr>
             <td bgcolor="#F2EDE4" style="background:#F2EDE4;padding:16px 32px;color:#79746E;font-size:12px;text-align:center;">
-              &copy; ${new Date().getFullYear()} TheGrillBook | thegrillbook.nl
+              &copy; ${new Date().getFullYear()} BBQHeros | thegrillbook.nl
             </td>
           </tr>
         </table>
@@ -63,15 +63,15 @@ function verificationEmailHtml(link: string): string {
 function verificationEmailText(link: string): string {
   return `Hoi,
 
-Bedankt voor je registratie bij TheGrillBook. Klik op de link hieronder om je e-mailadres te bevestigen en je kookboek te openen.
+Bedankt voor je registratie bij BBQHeros. Klik op de link hieronder om je e-mailadres te bevestigen en je kookboek te openen.
 
 ${link}
 
 Met vriendelijke groet,
-TheGrillBook
+BBQHeros
 
 --
-(c) ${new Date().getFullYear()} TheGrillBook | thegrillbook.nl`
+(c) ${new Date().getFullYear()} BBQHeros | thegrillbook.nl`
 }
 
 serve(async (req) => {

@@ -12,7 +12,7 @@ function json(body: unknown, status = 200) {
   })
 }
 
-function likeEmailHtml(likerName: string, likerUsername: string, recipeTitle: string, recipeLink: string): string {
+function sharedEmailHtml(sharerName: string, sharerUsername: string, recipeTitle: string, recipeLink: string): string {
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -22,11 +22,11 @@ function likeEmailHtml(likerName: string, likerUsername: string, recipeTitle: st
 <meta name="x-apple-disable-message-reformatting">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
-<title>Iemand heeft je recept geliket</title>
+<title>Er is een recept met je gedeeld</title>
 </head>
 <body style="margin:0;padding:0;background:#F2EDE4;font-family:Arial,Helvetica,sans-serif;">
   <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#fff;opacity:0;">
-    ${likerName} liket "${recipeTitle}".
+    ${sharerName} deelde "${recipeTitle}" met je.
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#F2EDE4" style="background:#F2EDE4;">
     <tr>
@@ -39,10 +39,10 @@ function likeEmailHtml(likerName: string, likerUsername: string, recipeTitle: st
           </tr>
           <tr>
             <td style="padding:32px;color:#1a1a1a;font-size:15px;line-height:1.6;">
-              <h1 style="margin:0 0 16px;font-size:20px;color:#0B0B0B;">Iemand heeft je recept geliket</h1>
-              <p style="margin:0 0 24px;"><strong>${likerName}</strong> (@${likerUsername}) liket je recept <strong>"${recipeTitle}"</strong>.</p>
+              <h1 style="margin:0 0 16px;font-size:20px;color:#0B0B0B;">Er is een recept met je gedeeld</h1>
+              <p style="margin:0 0 24px;"><strong>${sharerName}</strong> (@${sharerUsername}) deelde het recept <strong>"${recipeTitle}"</strong> met je.</p>
               <p style="margin:0 0 24px;text-align:center;">
-                <a href="${recipeLink}" style="background:#FF5B14;color:#0B0B0B;padding:14px 28px;text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold;">Bekijk je recept</a>
+                <a href="${recipeLink}" style="background:#FF5B14;color:#0B0B0B;padding:14px 28px;text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold;">Bekijk het recept</a>
               </p>
             </td>
           </tr>
@@ -59,10 +59,10 @@ function likeEmailHtml(likerName: string, likerUsername: string, recipeTitle: st
 </html>`
 }
 
-function likeEmailText(likerName: string, likerUsername: string, recipeTitle: string, recipeLink: string): string {
+function sharedEmailText(sharerName: string, sharerUsername: string, recipeTitle: string, recipeLink: string): string {
   return `Hoi,
 
-${likerName} (@${likerUsername}) liket je recept "${recipeTitle}".
+${sharerName} (@${sharerUsername}) deelde het recept "${recipeTitle}" met je.
 
 ${recipeLink}
 
@@ -86,39 +86,48 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     )
     const {
-      data: { user: liker },
+      data: { user: sharer },
     } = await userClient.auth.getUser()
-    if (!liker) return json({ success: false, error: 'Unauthorized' }, 401)
+    if (!sharer) return json({ success: false, error: 'Unauthorized' }, 401)
 
-    const { recipeId } = await req.json()
-    if (!recipeId) return json({ success: false, error: 'recipeId is verplicht.' }, 400)
+    const { recipeId, sharedWithUserId } = await req.json()
+    if (!recipeId || !sharedWithUserId) {
+      return json({ success: false, error: 'recipeId en sharedWithUserId zijn verplicht.' }, 400)
+    }
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    const [{ data: recipe }, { data: likerProfile }] = await Promise.all([
-      admin.from('recipes').select('owner_id, title').eq('id', recipeId).single(),
-      admin.from('profiles').select('username, display_name').eq('id', liker.id).single(),
+    // Only send if a genuine share row exists for this exact pair — avoids the
+    // endpoint being used to email arbitrary people about arbitrary recipes.
+    const [{ data: shareRow }, { data: recipe }, { data: sharerProfile }] = await Promise.all([
+      admin
+        .from('recipe_shares')
+        .select('recipe_id')
+        .eq('recipe_id', recipeId)
+        .eq('shared_by', sharer.id)
+        .eq('shared_with', sharedWithUserId)
+        .maybeSingle(),
+      admin.from('recipes').select('title').eq('id', recipeId).single(),
+      admin.from('profiles').select('username, display_name').eq('id', sharer.id).single(),
     ])
 
-    if (!recipe || !likerProfile || recipe.owner_id === liker.id) {
-      return json({ success: true }) // nothing to notify
-    }
+    if (!shareRow || !recipe || !sharerProfile) return json({ success: true })
 
-    const { data: owner } = await admin.auth.admin.getUserById(recipe.owner_id)
-    const ownerEmail = owner?.user?.email
-    if (!ownerEmail) return json({ success: true })
+    const { data: recipient } = await admin.auth.admin.getUserById(sharedWithUserId)
+    const recipientEmail = recipient?.user?.email
+    if (!recipientEmail) return json({ success: true })
 
-    const likerName = likerProfile.display_name || likerProfile.username
+    const sharerName = sharerProfile.display_name || sharerProfile.username
     const recipeLink = `${SITE_URL}/#/app/recept/${recipeId}`
 
     await sendEmail({
-      to: ownerEmail,
-      subject: 'Iemand heeft je recept geliket',
-      html: likeEmailHtml(likerName, likerProfile.username, recipe.title, recipeLink),
-      text: likeEmailText(likerName, likerProfile.username, recipe.title, recipeLink),
+      to: recipientEmail,
+      subject: 'Er is een recept met je gedeeld',
+      html: sharedEmailHtml(sharerName, sharerProfile.username, recipe.title, recipeLink),
+      text: sharedEmailText(sharerName, sharerProfile.username, recipe.title, recipeLink),
     })
 
     return json({ success: true })

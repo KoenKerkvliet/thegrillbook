@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { StarRating } from './StarRating'
 import { LikeButton } from './LikeButton'
+import { ShareButton } from './ShareButton'
+import { SaveButton } from './SaveButton'
 import { relativeTime } from '../lib/relativeTime'
 
 export type FeedRecipeData = {
@@ -17,6 +19,7 @@ export type FeedRecipeData = {
   ownerAvatarUrl: string | null
   likeCount: number
   likedByMe: boolean
+  savedAsId: string | null
 }
 
 export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
@@ -64,12 +67,14 @@ export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
         {recipe.description && (
           <p className="text-cream/70 text-sm leading-relaxed mb-4">{recipe.description}</p>
         )}
-        <div className="pt-4 border-t border-line">
+        <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-line">
           <LikeButton
             recipeId={recipe.id}
             initiallyLiked={recipe.likedByMe}
             initialCount={recipe.likeCount}
           />
+          <ShareButton recipeId={recipe.id} />
+          <SaveButton recipeId={recipe.id} initiallySavedAsId={recipe.savedAsId} />
         </div>
       </div>
     </article>

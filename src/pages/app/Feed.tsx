@@ -135,10 +135,20 @@ export default function Feed() {
       momentRows = momentData ?? []
 
       const recipeIds = recipeRows.map((r) => r.id)
-      const likeRows = recipeIds.length
-        ? (await supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds))
-            .data ?? []
-        : []
+      const [{ data: likeData }, { data: savedData }] = await Promise.all([
+        recipeIds.length
+          ? supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds)
+          : Promise.resolve({ data: [] as { recipe_id: string; user_id: string }[] }),
+        recipeIds.length
+          ? supabase
+              .from('recipes')
+              .select('id, forked_from_recipe_id')
+              .eq('owner_id', user!.id)
+              .in('forked_from_recipe_id', recipeIds)
+          : Promise.resolve({ data: [] as { id: string; forked_from_recipe_id: string | null }[] }),
+      ])
+      const likeRows = likeData ?? []
+      const savedMap = new Map((savedData ?? []).map((s) => [s.forked_from_recipe_id, s.id]))
 
       if (cancelled) return
 
@@ -161,6 +171,7 @@ export default function Feed() {
             ownerAvatarUrl: r.profiles?.avatar_url ?? null,
             likeCount: likesForRecipe.length,
             likedByMe: likesForRecipe.some((l) => l.user_id === user!.id),
+            savedAsId: savedMap.get(r.id) ?? null,
           },
         }
       })

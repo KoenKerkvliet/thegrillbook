@@ -121,7 +121,13 @@ export default function RecipeDetail() {
       </div>
 
       {recipe.profiles && !isOwner && (
-        <p className="text-sm text-cream/50 mb-4">@{recipe.profiles.username}</p>
+        <p className="text-sm text-cream/50 mb-1">@{recipe.profiles.username}</p>
+      )}
+
+      {recipe.original_owner_username && (
+        <p className="text-sm text-cream/40 mb-4">
+          Origineel van @{recipe.original_owner_username}
+        </p>
       )}
 
       {recipe.cover_photo_url && (

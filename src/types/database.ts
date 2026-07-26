@@ -210,6 +210,49 @@ export type Database = {
           },
         ]
       }
+      recipe_shares: {
+        Row: {
+          created_at: string
+          recipe_id: string
+          shared_by: string
+          shared_with: string
+        }
+        Insert: {
+          created_at?: string
+          recipe_id: string
+          shared_by: string
+          shared_with: string
+        }
+        Update: {
+          created_at?: string
+          recipe_id?: string
+          shared_by?: string
+          shared_with?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_shares_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_shared_with_fkey"
+            columns: ["shared_with"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipe_steps: {
         Row: {
           id: string
@@ -245,8 +288,11 @@ export type Database = {
           cover_photo_url: string | null
           created_at: string
           description: string | null
+          forked_from_recipe_id: string | null
           id: string
           is_public: boolean
+          original_owner_display_name: string | null
+          original_owner_username: string | null
           owner_id: string
           rating: number | null
           servings: number | null
@@ -259,8 +305,11 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           description?: string | null
+          forked_from_recipe_id?: string | null
           id?: string
           is_public?: boolean
+          original_owner_display_name?: string | null
+          original_owner_username?: string | null
           owner_id: string
           rating?: number | null
           servings?: number | null
@@ -273,8 +322,11 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           description?: string | null
+          forked_from_recipe_id?: string | null
           id?: string
           is_public?: boolean
+          original_owner_display_name?: string | null
+          original_owner_username?: string | null
           owner_id?: string
           rating?: number | null
           servings?: number | null
@@ -283,6 +335,13 @@ export type Database = {
           youtube_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "recipes_forked_from_recipe_id_fkey"
+            columns: ["forked_from_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recipes_owner_id_fkey"
             columns: ["owner_id"]

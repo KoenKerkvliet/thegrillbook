@@ -107,7 +107,7 @@ export default function Landing() {
       </section>
 
       <footer className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-cream/40">
-        <p>TheGrillBook — kook je eigen shit. 2026</p>
+        <p>BBQHeros — kook je eigen shit. 2026</p>
         <div className="flex gap-6">
           <a href="#privacy" className="hover:text-cream/70">
             Privacy
