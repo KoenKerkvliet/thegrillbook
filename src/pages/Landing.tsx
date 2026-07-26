@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Logo } from '../components/Logo'
 
 const STEPS = [
   {
@@ -18,15 +19,6 @@ const STEPS = [
   },
 ]
 
-function Logo() {
-  return (
-    <Link to="/" className="flex items-center gap-2">
-      <span className="w-2.5 h-2.5 bg-flame" />
-      <span className="font-display text-lg tracking-tight">VUUR</span>
-    </Link>
-  )
-}
-
 function RecipePreviewCard() {
   return (
     <div className="rounded-lg overflow-hidden border border-line bg-surface">
@@ -37,15 +29,6 @@ function RecipePreviewCard() {
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="p-4">
-        <p className="text-xs text-cream/50 mb-1">Van Joost — 2 dagen terug</p>
-        <p className="font-display text-lg">Spareribs, 6 uur laag</p>
-        <div className="flex items-center gap-3 mt-2 text-sm text-cream/60">
-          <span className="text-flame">★★★★★</span>
-          <span>6u 20min</span>
-          <span>4 personen</span>
-        </div>
-      </div>
     </div>
   )
 }
@@ -54,16 +37,12 @@ export default function Landing() {
   return (
     <div className="bg-ink text-cream">
       <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
-        <Logo />
+        <Link to="/">
+          <Logo className="text-lg" />
+        </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm tracking-wide text-cream/70">
-          <a href="#ontdek" className="hover:text-cream">
-            Ontdek
-          </a>
           <a href="#hoe-het-werkt" className="hover:text-cream">
             Hoe het werkt
-          </a>
-          <a href="#koks" className="hover:text-cream">
-            Koks
           </a>
         </nav>
         <div className="flex items-center gap-4">
@@ -110,20 +89,6 @@ export default function Landing() {
               Kijk eerst rond
             </a>
           </div>
-          <div className="flex gap-10">
-            <div>
-              <p className="font-display text-2xl">4.812</p>
-              <p className="text-xs text-cream/50 tracking-wide">RECEPTEN GELOGD</p>
-            </div>
-            <div>
-              <p className="font-display text-2xl">1.203</p>
-              <p className="text-xs text-cream/50 tracking-wide">KOKS</p>
-            </div>
-            <div>
-              <p className="font-display text-2xl">0</p>
-              <p className="text-xs text-cream/50 tracking-wide">RECLAMESPAM</p>
-            </div>
-          </div>
         </div>
 
         <RecipePreviewCard />
@@ -142,7 +107,7 @@ export default function Landing() {
       </section>
 
       <footer className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-cream/40">
-        <p>VUUR — kook je eigen shit. 2026</p>
+        <p>TheGrillBook — kook je eigen shit. 2026</p>
         <div className="flex gap-6">
           <a href="#privacy" className="hover:text-cream/70">
             Privacy

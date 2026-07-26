@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth/useAuth'
+import { Logo } from '../../components/Logo'
 
 const NAV_LINKS = [
   { to: '/app', label: 'Feed', end: true },
@@ -20,9 +21,8 @@ export default function AppShell() {
     <div className="min-h-svh bg-ink text-cream flex flex-col">
       <header className="border-b border-line">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-          <NavLink to="/app" className="flex items-center gap-2 shrink-0">
-            <span className="w-2.5 h-2.5 bg-flame" />
-            <span className="font-display text-lg tracking-tight">VUUR</span>
+          <NavLink to="/app" className="shrink-0">
+            <Logo className="text-lg" />
           </NavLink>
 
           <nav className="flex items-center gap-6 text-sm overflow-x-auto">

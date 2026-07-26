@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { Logo } from '../components/Logo'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -28,9 +29,8 @@ export default function Login() {
   return (
     <div className="min-h-svh bg-ink text-cream flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <Link to="/" className="flex items-center gap-2 mb-10 justify-center">
-          <span className="w-3 h-3 bg-flame" />
-          <span className="font-display text-xl tracking-tight">VUUR</span>
+        <Link to="/" className="flex justify-center mb-10">
+          <Logo className="text-xl" />
         </Link>
 
         <h1 className="font-display text-3xl mb-8 text-center">Inloggen</h1>
