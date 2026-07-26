@@ -1,12 +1,11 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Logo } from '../components/Logo'
 
 const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/
 
 export default function Signup() {
-  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -25,34 +24,25 @@ export default function Signup() {
     }
 
     setLoading(true)
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username,
-          display_name: displayName || username,
-        },
-      },
+    const { data, error } = await supabase.functions.invoke('send-verification-email', {
+      body: { email, password, username, displayName: displayName || username },
     })
     setLoading(false)
 
-    if (error) {
-      if (error.message.toLowerCase().includes('already registered')) {
+    const invokeError = error || (data && data.success === false ? new Error(data.error) : null)
+    if (invokeError) {
+      const message = invokeError.message.toLowerCase()
+      if (message.includes('already registered') || message.includes('already been registered')) {
         setError('Dit e-mailadres is al in gebruik.')
-      } else if (error.message.toLowerCase().includes('username')) {
+      } else if (message.includes('username')) {
         setError('Deze gebruikersnaam is al bezet, kies een andere.')
       } else {
-        setError(error.message)
+        setError(invokeError.message || 'Registreren mislukt.')
       }
       return
     }
 
-    if (data.session) {
-      navigate('/app', { replace: true })
-    } else {
-      setCheckEmail(true)
-    }
+    setCheckEmail(true)
   }
 
   if (checkEmail) {

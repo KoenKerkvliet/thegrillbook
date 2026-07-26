@@ -33,6 +33,11 @@ export function FollowButton({ targetUserId, initiallyFollowing, onToggled }: Pr
       setFollowing(wasFollowing)
     } else {
       onToggled?.(!wasFollowing)
+      if (!wasFollowing) {
+        supabase.functions
+          .invoke('send-new-follower-email', { body: { followedUserId: targetUserId } })
+          .catch(() => {})
+      }
     }
     setBusy(false)
   }

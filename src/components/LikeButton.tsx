@@ -28,6 +28,8 @@ export function LikeButton({ recipeId, initiallyLiked, initialCount }: Props) {
     if (error) {
       setLiked(wasLiked)
       setCount((c) => (wasLiked ? c + 1 : c - 1))
+    } else if (!wasLiked) {
+      supabase.functions.invoke('send-like-email', { body: { recipeId } }).catch(() => {})
     }
     setBusy(false)
   }

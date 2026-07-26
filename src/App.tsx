@@ -4,6 +4,9 @@ import { ProtectedRoute } from './lib/auth/ProtectedRoute'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Verify from './pages/Verify'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import AppShell from './pages/app/AppShell'
 import Feed from './pages/app/Feed'
 import Kookboek from './pages/app/Kookboek'
@@ -20,6 +23,9 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registreren" element={<Signup />} />
+          <Route path="/bevestigen" element={<Verify />} />
+          <Route path="/wachtwoord-vergeten" element={<ForgotPassword />} />
+          <Route path="/wachtwoord-resetten" element={<ResetPassword />} />
 
           <Route
             path="/app"

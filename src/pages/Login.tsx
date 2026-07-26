@@ -51,9 +51,14 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-sm text-cream/60 mb-1" htmlFor="password">
-              Wachtwoord
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm text-cream/60" htmlFor="password">
+                Wachtwoord
+              </label>
+              <Link to="/wachtwoord-vergeten" className="text-xs text-flame hover:underline">
+                Wachtwoord vergeten?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
