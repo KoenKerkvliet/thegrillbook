@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FollowButton } from '../../components/FollowButton'
@@ -38,7 +38,8 @@ function ProfileRow({
 
 export default function Chefs() {
   const { user } = useAuth()
-  const [query, setQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [results, setResults] = useState<Profile[] | null>(null)
   const [following, setFollowing] = useState<Profile[]>([])
   const [followers, setFollowers] = useState<Profile[]>([])
@@ -74,6 +75,12 @@ export default function Chefs() {
     loadRelations()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q) setQuery(q)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   useEffect(() => {
     if (!user) return

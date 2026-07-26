@@ -2,12 +2,73 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
-import { RecipeCard, type RecipeCardData } from '../../components/RecipeCard'
+import { FeedRecipeCard, type FeedRecipeData } from '../../components/FeedRecipeCard'
+import { FollowButton } from '../../components/FollowButton'
+import type { Tables } from '../../types/database'
+
+type Profile = Tables<'profiles'>
+
+type Stats = { recipes: number; privateRecipes: number; followers: number }
+
+function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
+  if (chefs.length === 0) return null
+  return (
+    <div className="bg-surface border border-line p-5 flex flex-col gap-4">
+      <h2 className="text-xs font-semibold tracking-widest text-cream/50 uppercase">
+        Koks die je nog niet volgt
+      </h2>
+      <div className="flex flex-col gap-4">
+        {chefs.map((chef) => (
+          <div key={chef.id} className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
+              {chef.avatar_url ? (
+                <img src={chef.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                chef.username.slice(0, 2).toUpperCase()
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">{chef.display_name || chef.username}</p>
+              <p className="text-xs text-cream/50 truncate">@{chef.username}</p>
+            </div>
+            <FollowButton targetUserId={chef.id} initiallyFollowing={false} />
+          </div>
+        ))}
+      </div>
+      <Link to="/app/chefs" className="text-sm text-flame hover:underline">
+        Meer chefs zoeken
+      </Link>
+    </div>
+  )
+}
+
+function KookboekStats({ stats }: { stats: Stats | null }) {
+  if (!stats) return null
+  return (
+    <div className="bg-surface border border-line p-5 flex flex-col gap-3">
+      <h2 className="text-xs font-semibold tracking-widest text-cream/50 uppercase">
+        Jouw kookboek
+      </h2>
+      {[
+        ['Recepten', stats.recipes],
+        ['Privé', stats.privateRecipes],
+        ['Volgers', stats.followers],
+      ].map(([label, value]) => (
+        <div key={label} className="flex items-baseline justify-between">
+          <span className="text-sm text-cream/70">{label}</span>
+          <span className="font-display text-2xl">{value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export default function Feed() {
   const { user } = useAuth()
-  const [recipes, setRecipes] = useState<RecipeCardData[] | null>(null)
+  const [recipes, setRecipes] = useState<FeedRecipeData[] | null>(null)
   const [followingCount, setFollowingCount] = useState<number | null>(null)
+  const [suggested, setSuggested] = useState<Profile[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -23,34 +84,81 @@ export default function Feed() {
       if (cancelled) return
       setFollowingCount(followingIds.length)
 
-      if (followingIds.length === 0) {
-        setRecipes([])
-        return
+      let recipeRows: Array<{
+        id: string
+        title: string
+        description: string | null
+        cover_photo_url: string | null
+        cook_time_minutes: number | null
+        servings: number | null
+        rating: number | null
+        created_at: string
+        owner_id: string
+        profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
+      }> = []
+
+      if (followingIds.length > 0) {
+        const { data } = await supabase
+          .from('recipes')
+          .select(
+            'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)',
+          )
+          .eq('is_public', true)
+          .in('owner_id', followingIds)
+          .order('created_at', { ascending: false })
+        recipeRows = data ?? []
       }
 
-      const { data: recipeRows } = await supabase
-        .from('recipes')
-        .select(
-          'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, owner_id, profiles!recipes_owner_id_fkey(username)',
-        )
-        .eq('is_public', true)
-        .in('owner_id', followingIds)
-        .order('created_at', { ascending: false })
+      const recipeIds = recipeRows.map((r) => r.id)
+      const likeRows = recipeIds.length
+        ? (await supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds))
+            .data ?? []
+        : []
 
       if (cancelled) return
 
       setRecipes(
-        (recipeRows ?? []).map((r) => ({
-          id: r.id,
-          title: r.title,
-          cover_photo_url: r.cover_photo_url,
-          cook_time_minutes: r.cook_time_minutes,
-          servings: r.servings,
-          rating: r.rating,
-          is_public: r.is_public,
-          ownerUsername: (r.profiles as { username: string } | null)?.username,
-        })),
+        recipeRows.map((r) => {
+          const likesForRecipe = likeRows.filter((l) => l.recipe_id === r.id)
+          return {
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            cover_photo_url: r.cover_photo_url,
+            cook_time_minutes: r.cook_time_minutes,
+            servings: r.servings,
+            rating: r.rating,
+            created_at: r.created_at,
+            ownerUsername: r.profiles?.username ?? '?',
+            ownerDisplayName: r.profiles?.display_name ?? null,
+            ownerAvatarUrl: r.profiles?.avatar_url ?? null,
+            likeCount: likesForRecipe.length,
+            likedByMe: likesForRecipe.some((l) => l.user_id === user!.id),
+          }
+        }),
       )
+
+      const excludeIds = [user!.id, ...followingIds]
+      let suggestedQuery = supabase.from('profiles').select('*').not('id', 'in', `(${excludeIds.join(',')})`)
+      const { data: suggestedRows } = await suggestedQuery.order('created_at', { ascending: false }).limit(3)
+      if (!cancelled) setSuggested(suggestedRows ?? [])
+
+      const [{ count: recipeCount }, { count: privateCount }, { count: followerCount }] = await Promise.all([
+        supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('owner_id', user!.id),
+        supabase
+          .from('recipes')
+          .select('id', { count: 'exact', head: true })
+          .eq('owner_id', user!.id)
+          .eq('is_public', false),
+        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', user!.id),
+      ])
+      if (!cancelled) {
+        setStats({
+          recipes: recipeCount ?? 0,
+          privateRecipes: privateCount ?? 0,
+          followers: followerCount ?? 0,
+        })
+      }
     }
 
     load()
@@ -63,8 +171,8 @@ export default function Feed() {
     return <p className="text-cream/50">Feed laden...</p>
   }
 
-  if (followingCount === 0) {
-    return (
+  const feedColumn =
+    followingCount === 0 ? (
       <div className="text-center py-20">
         <p className="font-display text-2xl mb-3">Je feed is nog leeg</p>
         <p className="text-cream/60 mb-6">
@@ -77,22 +185,23 @@ export default function Feed() {
           Zoek collega chefs
         </Link>
       </div>
+    ) : recipes.length === 0 ? (
+      <p className="text-cream/60">De chefs die je volgt hebben nog geen openbare recepten gedeeld.</p>
+    ) : (
+      <div className="flex flex-col gap-6">
+        {recipes.map((recipe) => (
+          <FeedRecipeCard key={recipe.id} recipe={recipe} />
+        ))}
+      </div>
     )
-  }
-
-  if (recipes.length === 0) {
-    return (
-      <p className="text-cream/60">
-        De chefs die je volgt hebben nog geen openbare recepten gedeeld.
-      </p>
-    )
-  }
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {recipes.map((recipe) => (
-        <RecipeCard key={recipe.id} recipe={recipe} />
-      ))}
+    <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
+      <div>{feedColumn}</div>
+      <div className="flex flex-col gap-6">
+        <SuggestedChefs chefs={suggested} />
+        <KookboekStats stats={stats} />
+      </div>
     </div>
   )
 }
