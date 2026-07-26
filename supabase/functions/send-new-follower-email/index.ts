@@ -109,7 +109,7 @@ serve(async (req) => {
     if (!followedEmail || !followerProfile) return json({ success: true })
 
     const followerName = followerProfile.display_name || followerProfile.username
-    const chefsLink = `${SITE_URL}/#/app/chefs`
+    const chefsLink = `${SITE_URL}/app/chefs`
 
     await sendEmail({
       to: followedEmail,

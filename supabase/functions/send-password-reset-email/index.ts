@@ -89,12 +89,12 @@ serve(async (req) => {
     const { data, error } = await admin.auth.admin.generateLink({
       type: 'recovery',
       email,
-      options: { redirectTo: `${SITE_URL}/#/wachtwoord-resetten` },
+      options: { redirectTo: `${SITE_URL}/wachtwoord-resetten` },
     })
 
     // Never reveal whether the email exists — always report success to the caller.
     if (!error && data.properties?.hashed_token) {
-      const link = `${SITE_URL}/#/wachtwoord-resetten?token_hash=${data.properties.hashed_token}&type=recovery`
+      const link = `${SITE_URL}/wachtwoord-resetten?token_hash=${data.properties.hashed_token}&type=recovery`
       await sendEmail({
         to: email,
         subject: 'Wachtwoord opnieuw instellen',

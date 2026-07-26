@@ -121,7 +121,7 @@ serve(async (req) => {
     if (!recipientEmail) return json({ success: true })
 
     const sharerName = sharerProfile.display_name || sharerProfile.username
-    const recipeLink = `${SITE_URL}/#/app/recept/${recipeId}`
+    const recipeLink = `${SITE_URL}/app/recept/${recipeId}`
 
     await sendEmail({
       to: recipientEmail,

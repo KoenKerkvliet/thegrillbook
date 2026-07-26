@@ -40,11 +40,6 @@ export default function Landing() {
         <Link to="/">
           <Logo className="h-10" />
         </Link>
-        <nav className="hidden md:flex items-center gap-8 text-sm tracking-wide text-cream/70">
-          <a href="#hoe-het-werkt" className="hover:text-cream">
-            Hoe het werkt
-          </a>
-        </nav>
         <div className="flex items-center gap-4">
           <Link to="/login" className="text-sm text-cream/80 hover:text-cream hidden sm:inline">
             Inloggen

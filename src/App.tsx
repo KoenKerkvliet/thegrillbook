@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth/AuthProvider'
 import { ProtectedRoute } from './lib/auth/ProtectedRoute'
 import Landing from './pages/Landing'
@@ -14,11 +14,12 @@ import RecipeForm from './pages/app/RecipeForm'
 import RecipeDetail from './pages/app/RecipeDetail'
 import MomentForm from './pages/app/MomentForm'
 import Chefs from './pages/app/Chefs'
+import ChefProfile from './pages/app/ChefProfile'
 import Profile from './pages/app/Profile'
 
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -43,11 +44,12 @@ function App() {
             <Route path="recept/:id" element={<RecipeDetail />} />
             <Route path="moment/nieuw" element={<MomentForm />} />
             <Route path="chefs" element={<Chefs />} />
+            <Route path="chefs/:username" element={<ChefProfile />} />
             <Route path="profiel" element={<Profile />} />
           </Route>
         </Routes>
       </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   )
 }
 

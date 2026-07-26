@@ -1,0 +1,18 @@
+{
+  "name": "BBQHeros",
+  "short_name": "BBQHeros",
+  "description": "Log je eigen BBQ-recepten, hou ze privé of deel ze met je collega chefs.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0B0B",
+  "theme_color": "#0B0B0B",
+  "icons": [
+    {
+      "src": "/images/icon.png",
+      "sizes": "224x224",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

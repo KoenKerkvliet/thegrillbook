@@ -94,7 +94,7 @@ serve(async (req) => {
       password,
       options: {
         data: { username, display_name: displayName || username },
-        redirectTo: `${SITE_URL}/#/bevestigen`,
+        redirectTo: `${SITE_URL}/bevestigen`,
       },
     })
 
@@ -102,7 +102,7 @@ serve(async (req) => {
       return json({ success: false, error: error?.message ?? 'Registreren mislukt.' }, 400)
     }
 
-    const link = `${SITE_URL}/#/bevestigen?token_hash=${data.properties.hashed_token}&type=signup`
+    const link = `${SITE_URL}/bevestigen?token_hash=${data.properties.hashed_token}&type=signup`
 
     await sendEmail({
       to: email,
