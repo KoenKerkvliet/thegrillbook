@@ -18,7 +18,7 @@ function ProfileRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 bg-surface border border-line rounded-md px-4 py-3">
-      <Link to="#" className="flex items-center gap-3 min-w-0">
+      <Link to={`/app/chefs/${profile.username}`} className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
