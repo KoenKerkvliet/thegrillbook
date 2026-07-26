@@ -220,6 +220,7 @@ export type Database = {
           servings: number | null
           title: string
           updated_at: string
+          youtube_url: string | null
         }
         Insert: {
           cook_time_minutes?: number | null
@@ -233,6 +234,7 @@ export type Database = {
           servings?: number | null
           title: string
           updated_at?: string
+          youtube_url?: string | null
         }
         Update: {
           cook_time_minutes?: number | null
@@ -246,6 +248,7 @@ export type Database = {
           servings?: number | null
           title?: string
           updated_at?: string
+          youtube_url?: string | null
         }
         Relationships: [
           {

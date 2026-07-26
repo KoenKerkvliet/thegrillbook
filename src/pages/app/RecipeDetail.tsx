@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { StarRating } from '../../components/StarRating'
 import { LikeButton } from '../../components/LikeButton'
+import { extractYoutubeId } from '../../lib/youtube'
 import type { Tables } from '../../types/database'
 
 type Recipe = Tables<'recipes'> & { profiles: { username: string; display_name: string | null } | null }
@@ -169,6 +170,35 @@ export default function RecipeDetail() {
               <li key={step.id}>{step.text}</li>
             ))}
           </ol>
+        </section>
+      )}
+
+      {recipe.youtube_url && (
+        <section className="mb-6">
+          <h2 className="font-display text-xl mb-2">Video</h2>
+          {(() => {
+            const videoId = extractYoutubeId(recipe.youtube_url!)
+            return videoId ? (
+              <div className="aspect-video">
+                <iframe
+                  className="w-full h-full rounded-lg border border-line"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title={recipe.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <a
+                href={recipe.youtube_url!}
+                target="_blank"
+                rel="noreferrer"
+                className="text-flame hover:underline text-sm"
+              >
+                Bekijk video op YouTube
+              </a>
+            )
+          })()}
         </section>
       )}
 

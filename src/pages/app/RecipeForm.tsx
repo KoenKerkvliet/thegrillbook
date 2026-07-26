@@ -71,6 +71,7 @@ export default function RecipeForm() {
   const [rating, setRating] = useState(0)
   const [isPublic, setIsPublic] = useState(false)
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null)
+  const [youtubeUrl, setYoutubeUrl] = useState('')
   const [uploading, setUploading] = useState(false)
   const [ingredients, setIngredients] = useState<string[]>([''])
   const [steps, setSteps] = useState<string[]>([''])
@@ -98,6 +99,7 @@ export default function RecipeForm() {
       setRating(recipe.rating ?? 0)
       setIsPublic(recipe.is_public)
       setCoverPhotoUrl(recipe.cover_photo_url)
+      setYoutubeUrl(recipe.youtube_url ?? '')
       setIngredients(ingredientRows?.length ? ingredientRows.map((r) => r.text) : [''])
       setSteps(stepRows?.length ? stepRows.map((r) => r.text) : [''])
       setLoading(false)
@@ -150,6 +152,7 @@ export default function RecipeForm() {
       rating: rating || null,
       is_public: isPublic,
       cover_photo_url: coverPhotoUrl,
+      youtube_url: youtubeUrl.trim() || null,
     }
 
     const cleanIngredients = ingredients.map((t) => t.trim()).filter(Boolean)
@@ -208,7 +211,7 @@ export default function RecipeForm() {
 
       <div>
         <label className="block text-sm text-cream/60 mb-1" htmlFor="title">
-          Titel
+          Titel <span className="text-flame">*</span>
         </label>
         <input
           id="title"
@@ -244,6 +247,20 @@ export default function RecipeForm() {
         )}
         <input type="file" accept="image/*" onChange={handlePhotoChange} className="text-sm" />
         {uploading && <p className="text-xs text-cream/50 mt-1">Uploaden...</p>}
+      </div>
+
+      <div>
+        <label className="block text-sm text-cream/60 mb-1" htmlFor="youtubeUrl">
+          YouTube-link (optioneel)
+        </label>
+        <input
+          id="youtubeUrl"
+          type="url"
+          value={youtubeUrl}
+          onChange={(e) => setYoutubeUrl(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=..."
+          className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
