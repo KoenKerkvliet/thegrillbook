@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { StarRating } from '../../components/StarRating'
+import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
 
 function ListEditor({
   label,
@@ -112,11 +113,20 @@ export default function RecipeForm() {
     const file = e.target.files?.[0]
     if (!file || !user) return
     setUploading(true)
-    const path = `${user.id}/${crypto.randomUUID()}-${file.name}`
-    const { error: uploadError } = await supabase.storage.from('recipe-photos').upload(path, file)
-    if (!uploadError) {
-      const { data } = supabase.storage.from('recipe-photos').getPublicUrl(path)
-      setCoverPhotoUrl(data.publicUrl)
+    try {
+      const webp = await resizeAndConvertToWebp(file)
+      const path = `${user.id}/${crypto.randomUUID()}.webp`
+      const { error: uploadError } = await supabase.storage
+        .from('recipe-photos')
+        .upload(path, webp, { contentType: 'image/webp' })
+      if (!uploadError) {
+        const { data } = supabase.storage.from('recipe-photos').getPublicUrl(path)
+        setCoverPhotoUrl(data.publicUrl)
+      } else {
+        setError('Foto uploaden mislukt.')
+      }
+    } catch {
+      setError('Deze foto kon niet verwerkt worden. Probeer een andere afbeelding.')
     }
     setUploading(false)
   }

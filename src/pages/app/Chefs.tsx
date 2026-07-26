@@ -29,6 +29,9 @@ function ProfileRow({
         <div className="min-w-0">
           <p className="font-semibold truncate">{profile.display_name || profile.username}</p>
           <p className="text-sm text-cream/50 truncate">@{profile.username}</p>
+          {profile.bbq_brand && (
+            <p className="text-xs text-flame truncate">🔥 {profile.bbq_brand}</p>
+          )}
         </div>
       </Link>
       <FollowButton targetUserId={profile.id} initiallyFollowing={following} onToggled={onToggled} />
