@@ -357,6 +357,14 @@ export type Database = {
     }
     Functions: {
       get_chef_points: { Args: { target_user_id: string }; Returns: number }
+      get_chef_points_bulk: {
+        Args: { user_ids: string[] }
+        Returns: {
+          points: number
+          user_id: string
+        }[]
+      }
+      get_chef_streak: { Args: { target_user_id: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never

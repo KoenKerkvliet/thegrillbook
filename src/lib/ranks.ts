@@ -6,9 +6,10 @@ export type Rank = {
 }
 
 // A recipe takes real effort (ingredients, steps, photo) — worth more than
-// a quick BBQ moment log.
+// a quick BBQ moment log. Likes are a lighter social-proof bonus.
 export const RECIPE_POINTS = 3
 export const MOMENT_POINTS = 1
+export const LIKE_POINTS = 1
 
 export const RANKS: Rank[] = [
   { min: 0, name: 'Recruit', icon: '🔥', vibe: 'Net aangemeld, moet het vak nog leren' },

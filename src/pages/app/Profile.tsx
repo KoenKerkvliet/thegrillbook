@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
 import { RankBadge } from '../../components/RankBadge'
+import { StreakBadge } from '../../components/StreakBadge'
 
 export default function Profile() {
   const { user, profile, refreshProfile } = useAuth()
@@ -15,12 +16,17 @@ export default function Profile() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [points, setPoints] = useState<number | null>(null)
+  const [streak, setStreak] = useState<number | null>(null)
 
   useEffect(() => {
     if (!user) return
-    supabase
-      .rpc('get_chef_points', { target_user_id: user.id })
-      .then(({ data }) => setPoints(data ?? 0))
+    Promise.all([
+      supabase.rpc('get_chef_points', { target_user_id: user.id }),
+      supabase.rpc('get_chef_streak', { target_user_id: user.id }),
+    ]).then(([pointsRes, streakRes]) => {
+      setPoints(pointsRes.data ?? 0)
+      setStreak(streakRes.data ?? 0)
+    })
   }, [user])
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -70,8 +76,14 @@ export default function Profile() {
       <div>
         <h1 className="font-display text-3xl mb-4">Mijn profiel</h1>
         {points !== null && (
-          <div className="bg-surface border border-line rounded-md p-4">
+          <div className="bg-surface border border-line rounded-md p-4 flex flex-col gap-3">
             <RankBadge points={points} showProgress />
+            {streak !== null && (
+              <>
+                <div className="border-t border-line" />
+                <StreakBadge weeks={streak} />
+              </>
+            )}
           </div>
         )}
       </div>

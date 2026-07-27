@@ -1,4 +1,5 @@
 import { relativeTime } from '../lib/relativeTime'
+import { RankIcon } from './RankIcon'
 
 export type MomentCardData = {
   id: string
@@ -8,6 +9,7 @@ export type MomentCardData = {
   ownerUsername: string
   ownerDisplayName: string | null
   ownerAvatarUrl: string | null
+  ownerPoints: number
 }
 
 type Props = {
@@ -28,9 +30,10 @@ export function MomentCard({ moment, isOwner, onDelete }: Props) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold truncate">
+          <p className="font-semibold truncate flex items-center gap-1.5">
             {moment.ownerDisplayName || moment.ownerUsername}
-            <span className="ml-2 align-middle text-[10px] font-bold tracking-wide text-flame border border-flame/40 rounded px-1.5 py-0.5">
+            <RankIcon points={moment.ownerPoints} />
+            <span className="text-[10px] font-bold tracking-wide text-flame border border-flame/40 rounded px-1.5 py-0.5">
               🔥 VUUR AAN
             </span>
           </p>

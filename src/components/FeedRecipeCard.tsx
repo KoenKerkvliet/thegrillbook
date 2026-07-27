@@ -3,6 +3,7 @@ import { StarRating } from './StarRating'
 import { LikeButton } from './LikeButton'
 import { ShareButton } from './ShareButton'
 import { SaveButton } from './SaveButton'
+import { RankIcon } from './RankIcon'
 import { relativeTime } from '../lib/relativeTime'
 
 export type FeedRecipeData = {
@@ -17,6 +18,7 @@ export type FeedRecipeData = {
   ownerUsername: string
   ownerDisplayName: string | null
   ownerAvatarUrl: string | null
+  ownerPoints: number
   likeCount: number
   likedByMe: boolean
   savedAsId: string | null
@@ -34,7 +36,10 @@ export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold truncate">{recipe.ownerDisplayName || recipe.ownerUsername}</p>
+          <p className="font-semibold truncate flex items-center gap-1.5">
+            {recipe.ownerDisplayName || recipe.ownerUsername}
+            <RankIcon points={recipe.ownerPoints} />
+          </p>
           <p className="text-xs text-cream/50">
             @{recipe.ownerUsername} · {relativeTime(recipe.created_at)}
           </p>

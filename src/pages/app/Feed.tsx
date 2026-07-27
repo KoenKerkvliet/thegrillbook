@@ -6,11 +6,18 @@ import { FeedRecipeCard, type FeedRecipeData } from '../../components/FeedRecipe
 import { MomentCard, type MomentCardData } from '../../components/MomentCard'
 import { FollowButton } from '../../components/FollowButton'
 import { RankBadge } from '../../components/RankBadge'
+import { StreakBadge } from '../../components/StreakBadge'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
 
-type Stats = { recipes: number; privateRecipes: number; followers: number; points: number }
+type Stats = {
+  recipes: number
+  privateRecipes: number
+  followers: number
+  points: number
+  streak: number
+}
 
 type FeedItem =
   | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData }
@@ -56,6 +63,8 @@ function StatsCard({ stats }: { stats: Stats | null }) {
         Jouw stats
       </h2>
       <RankBadge points={stats.points} showProgress />
+      <div className="border-t border-line" />
+      <StreakBadge weeks={stats.streak} />
       <div className="border-t border-line" />
       {[
         ['Recepten', stats.recipes],
@@ -138,7 +147,8 @@ export default function Feed() {
       momentRows = momentData ?? []
 
       const recipeIds = recipeRows.map((r) => r.id)
-      const [{ data: likeData }, { data: savedData }] = await Promise.all([
+      const ownerIds = [...new Set([...recipeRows, ...momentRows].map((r) => r.owner_id))]
+      const [{ data: likeData }, { data: savedData }, { data: ownerPointsData }] = await Promise.all([
         recipeIds.length
           ? supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds)
           : Promise.resolve({ data: [] as { recipe_id: string; user_id: string }[] }),
@@ -149,9 +159,13 @@ export default function Feed() {
               .eq('owner_id', user!.id)
               .in('forked_from_recipe_id', recipeIds)
           : Promise.resolve({ data: [] as { id: string; forked_from_recipe_id: string | null }[] }),
+        ownerIds.length
+          ? supabase.rpc('get_chef_points_bulk', { user_ids: ownerIds })
+          : Promise.resolve({ data: [] as { user_id: string; points: number }[] }),
       ])
       const likeRows = likeData ?? []
       const savedMap = new Map((savedData ?? []).map((s) => [s.forked_from_recipe_id, s.id]))
+      const ownerPointsMap = new Map((ownerPointsData ?? []).map((p) => [p.user_id, p.points]))
 
       if (cancelled) return
 
@@ -172,6 +186,7 @@ export default function Feed() {
             ownerUsername: r.profiles?.username ?? '?',
             ownerDisplayName: r.profiles?.display_name ?? null,
             ownerAvatarUrl: r.profiles?.avatar_url ?? null,
+            ownerPoints: ownerPointsMap.get(r.owner_id) ?? 0,
             likeCount: likesForRecipe.length,
             likedByMe: likesForRecipe.some((l) => l.user_id === user!.id),
             savedAsId: savedMap.get(r.id) ?? null,
@@ -191,6 +206,7 @@ export default function Feed() {
           ownerUsername: m.profiles?.username ?? '?',
           ownerDisplayName: m.profiles?.display_name ?? null,
           ownerAvatarUrl: m.profiles?.avatar_url ?? null,
+          ownerPoints: ownerPointsMap.get(m.owner_id) ?? 0,
         },
       }))
 
@@ -205,23 +221,30 @@ export default function Feed() {
       const { data: suggestedRows } = await suggestedQuery.order('created_at', { ascending: false }).limit(3)
       if (!cancelled) setSuggested(suggestedRows ?? [])
 
-      const [{ count: recipeCount }, { count: privateCount }, { count: followerCount }, { data: pointsData }] =
-        await Promise.all([
-          supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('owner_id', user!.id),
-          supabase
-            .from('recipes')
-            .select('id', { count: 'exact', head: true })
-            .eq('owner_id', user!.id)
-            .eq('is_public', false),
-          supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', user!.id),
-          supabase.rpc('get_chef_points', { target_user_id: user!.id }),
-        ])
+      const [
+        { count: recipeCount },
+        { count: privateCount },
+        { count: followerCount },
+        { data: pointsData },
+        { data: streakData },
+      ] = await Promise.all([
+        supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('owner_id', user!.id),
+        supabase
+          .from('recipes')
+          .select('id', { count: 'exact', head: true })
+          .eq('owner_id', user!.id)
+          .eq('is_public', false),
+        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', user!.id),
+        supabase.rpc('get_chef_points', { target_user_id: user!.id }),
+        supabase.rpc('get_chef_streak', { target_user_id: user!.id }),
+      ])
       if (!cancelled) {
         setStats({
           recipes: recipeCount ?? 0,
           privateRecipes: privateCount ?? 0,
           followers: followerCount ?? 0,
           points: pointsData ?? 0,
+          streak: streakData ?? 0,
         })
       }
     }

@@ -4,6 +4,8 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FollowButton } from '../../components/FollowButton'
 import { RankBadge } from '../../components/RankBadge'
+import { RankIcon } from '../../components/RankIcon'
+import { StreakBadge } from '../../components/StreakBadge'
 import { RecipeCard, type RecipeCardData } from '../../components/RecipeCard'
 import type { Tables } from '../../types/database'
 
@@ -16,6 +18,7 @@ export default function ChefProfile() {
   const [recipes, setRecipes] = useState<RecipeCardData[] | null>(null)
   const [following, setFollowing] = useState(false)
   const [points, setPoints] = useState<number | null>(null)
+  const [streak, setStreak] = useState<number | null>(null)
 
   useEffect(() => {
     if (!username || !user) return
@@ -34,22 +37,24 @@ export default function ChefProfile() {
         return
       }
 
-      const [{ data: recipeData }, { data: followRow }, { data: pointsData }] = await Promise.all([
-        supabase
-          .from('recipes')
-          .select(
-            'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username',
-          )
-          .eq('owner_id', profileData.id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('follows')
-          .select('follower_id')
-          .eq('follower_id', user!.id)
-          .eq('following_id', profileData.id)
-          .maybeSingle(),
-        supabase.rpc('get_chef_points', { target_user_id: profileData.id }),
-      ])
+      const [{ data: recipeData }, { data: followRow }, { data: pointsData }, { data: streakData }] =
+        await Promise.all([
+          supabase
+            .from('recipes')
+            .select(
+              'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username',
+            )
+            .eq('owner_id', profileData.id)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('follows')
+            .select('follower_id')
+            .eq('follower_id', user!.id)
+            .eq('following_id', profileData.id)
+            .maybeSingle(),
+          supabase.rpc('get_chef_points', { target_user_id: profileData.id }),
+          supabase.rpc('get_chef_streak', { target_user_id: profileData.id }),
+        ])
 
       if (cancelled) return
       // Set together so FollowButton mounts with the correct initiallyFollowing
@@ -58,6 +63,7 @@ export default function ChefProfile() {
       setFollowing(Boolean(followRow))
       setRecipes(recipeData ?? [])
       setPoints(pointsData ?? 0)
+      setStreak(streakData ?? 0)
       setProfile(profileData)
     }
 
@@ -94,8 +100,9 @@ export default function ChefProfile() {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl truncate">
+          <h1 className="font-display text-2xl truncate flex items-center gap-2">
             {profile.display_name || profile.username}
+            {points !== null && <RankIcon points={points} className="text-xl" />}
           </h1>
           <p className="text-sm text-cream/50">@{profile.username}</p>
           {profile.bbq_brand && (
@@ -110,8 +117,14 @@ export default function ChefProfile() {
       </div>
 
       {points !== null && (
-        <div className="bg-surface border border-line rounded-md p-4 max-w-sm">
+        <div className="bg-surface border border-line rounded-md p-4 max-w-sm flex flex-col gap-3">
           <RankBadge points={points} showProgress />
+          {streak !== null && (
+            <>
+              <div className="border-t border-line" />
+              <StreakBadge weeks={streak} />
+            </>
+          )}
         </div>
       )}
 

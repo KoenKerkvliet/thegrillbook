@@ -3,16 +3,19 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FollowButton } from '../../components/FollowButton'
+import { RankIcon } from '../../components/RankIcon'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
 
 function ProfileRow({
   profile,
+  points,
   following,
   onToggled,
 }: {
   profile: Profile
+  points: number
   following: boolean
   onToggled: (following: boolean) => void
 }) {
@@ -27,7 +30,10 @@ function ProfileRow({
           )}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold truncate">{profile.display_name || profile.username}</p>
+          <p className="font-semibold truncate flex items-center gap-1.5">
+            {profile.display_name || profile.username}
+            <RankIcon points={points} />
+          </p>
           <p className="text-sm text-cream/50 truncate">@{profile.username}</p>
           {profile.bbq_brand && (
             <p className="text-xs text-flame truncate">🔥 {profile.bbq_brand}</p>
@@ -47,6 +53,7 @@ export default function Chefs() {
   const [following, setFollowing] = useState<Profile[]>([])
   const [followers, setFollowers] = useState<Profile[]>([])
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set())
+  const [pointsMap, setPointsMap] = useState<Map<string, number>>(new Map())
 
   async function loadRelations() {
     if (!user) return
@@ -107,6 +114,22 @@ export default function Chefs() {
     }
   }, [query, user])
 
+  useEffect(() => {
+    const ids = [...new Set([...(results ?? []), ...following, ...followers].map((p) => p.id))]
+    if (ids.length === 0) {
+      setPointsMap(new Map())
+      return
+    }
+    let cancelled = false
+    supabase.rpc('get_chef_points_bulk', { user_ids: ids }).then(({ data }) => {
+      if (cancelled) return
+      setPointsMap(new Map((data ?? []).map((row) => [row.user_id, row.points])))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [results, following, followers])
+
   return (
     <div className="max-w-2xl flex flex-col gap-10">
       <div>
@@ -130,6 +153,7 @@ export default function Chefs() {
                 <ProfileRow
                   key={p.id}
                   profile={p}
+                  points={pointsMap.get(p.id) ?? 0}
                   following={followingIds.has(p.id)}
                   onToggled={loadRelations}
                 />
@@ -146,7 +170,13 @@ export default function Chefs() {
         ) : (
           <div className="flex flex-col gap-2">
             {following.map((p) => (
-              <ProfileRow key={p.id} profile={p} following={true} onToggled={loadRelations} />
+              <ProfileRow
+                key={p.id}
+                profile={p}
+                points={pointsMap.get(p.id) ?? 0}
+                following={true}
+                onToggled={loadRelations}
+              />
             ))}
           </div>
         )}
@@ -162,6 +192,7 @@ export default function Chefs() {
               <ProfileRow
                 key={p.id}
                 profile={p}
+                points={pointsMap.get(p.id) ?? 0}
                 following={followingIds.has(p.id)}
                 onToggled={loadRelations}
               />
