@@ -61,8 +61,8 @@ function RecipePreviewCard() {
       <div className="rounded-lg overflow-hidden border border-line bg-surface">
         <div className="aspect-[4/3] overflow-hidden">
           <img
-            src={`${import.meta.env.BASE_URL}images/hero-steak.png`}
-            alt="Steak op de grill, boven de gloeiende kolen"
+            src={`${import.meta.env.BASE_URL}images/hero-spareribs.webp`}
+            alt="Spareribs op de kamado, boven de gloeiende kolen"
             className="w-full h-full object-cover"
           />
         </div>
@@ -98,7 +98,7 @@ function MockFeedCard() {
 
       <div className="aspect-video overflow-hidden">
         <img
-          src={`${import.meta.env.BASE_URL}images/hero-steak.png`}
+          src={`${import.meta.env.BASE_URL}images/hero-spareribs.webp`}
           alt=""
           className="w-full h-full object-cover"
         />
