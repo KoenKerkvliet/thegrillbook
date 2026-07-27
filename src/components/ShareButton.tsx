@@ -4,8 +4,15 @@ import { useAuth } from '../lib/auth/useAuth'
 import type { Tables } from '../types/database'
 
 type Profile = Tables<'profiles'>
+type Kind = 'recipe' | 'video'
 
-export function ShareButton({ recipeId }: { recipeId: string }) {
+async function insertShare(kind: Kind, targetId: string, sharedBy: string, sharedWith: string) {
+  return kind === 'recipe'
+    ? supabase.from('recipe_shares').insert({ recipe_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
+    : supabase.from('video_shares').insert({ video_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
+}
+
+export function ShareButton({ kind, targetId }: { kind: Kind; targetId: string }) {
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -31,14 +38,15 @@ export function ShareButton({ recipeId }: { recipeId: string }) {
   async function handleShare(target: Profile) {
     if (!user || busy) return
     setBusy(true)
-    const { error } = await supabase
-      .from('recipe_shares')
-      .insert({ recipe_id: recipeId, shared_by: user.id, shared_with: target.id })
+    const { error } = await insertShare(kind, targetId, user.id, target.id)
     if (!error || error.code === '23505') {
       setSharedWithIds((prev) => new Set(prev).add(target.id))
-      supabase.functions
-        .invoke('send-recipe-shared-email', { body: { recipeId, sharedWithUserId: target.id } })
-        .catch(() => {})
+      const emailFn = kind === 'recipe' ? 'send-recipe-shared-email' : 'send-video-shared-email'
+      const body =
+        kind === 'recipe'
+          ? { recipeId: targetId, sharedWithUserId: target.id }
+          : { videoId: targetId, sharedWithUserId: target.id }
+      supabase.functions.invoke(emailFn, { body }).catch(() => {})
     }
     setBusy(false)
   }

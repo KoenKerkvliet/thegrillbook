@@ -2,13 +2,28 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth/useAuth'
 
+type Kind = 'recipe' | 'video'
+
 type Props = {
-  recipeId: string
+  kind: Kind
+  targetId: string
   initiallyLiked: boolean
   initialCount: number
 }
 
-export function LikeButton({ recipeId, initiallyLiked, initialCount }: Props) {
+async function insertLike(kind: Kind, targetId: string, userId: string) {
+  return kind === 'recipe'
+    ? supabase.from('recipe_likes').insert({ recipe_id: targetId, user_id: userId })
+    : supabase.from('video_likes').insert({ video_id: targetId, user_id: userId })
+}
+
+async function deleteLike(kind: Kind, targetId: string, userId: string) {
+  return kind === 'recipe'
+    ? supabase.from('recipe_likes').delete().eq('recipe_id', targetId).eq('user_id', userId)
+    : supabase.from('video_likes').delete().eq('video_id', targetId).eq('user_id', userId)
+}
+
+export function LikeButton({ kind, targetId, initiallyLiked, initialCount }: Props) {
   const { user } = useAuth()
   const [liked, setLiked] = useState(initiallyLiked)
   const [count, setCount] = useState(initialCount)
@@ -22,14 +37,16 @@ export function LikeButton({ recipeId, initiallyLiked, initialCount }: Props) {
     setCount((c) => (wasLiked ? c - 1 : c + 1))
 
     const { error } = wasLiked
-      ? await supabase.from('recipe_likes').delete().eq('recipe_id', recipeId).eq('user_id', user.id)
-      : await supabase.from('recipe_likes').insert({ recipe_id: recipeId, user_id: user.id })
+      ? await deleteLike(kind, targetId, user.id)
+      : await insertLike(kind, targetId, user.id)
 
     if (error) {
       setLiked(wasLiked)
       setCount((c) => (wasLiked ? c + 1 : c - 1))
     } else if (!wasLiked) {
-      supabase.functions.invoke('send-like-email', { body: { recipeId } }).catch(() => {})
+      const emailFn = kind === 'recipe' ? 'send-like-email' : 'send-video-like-email'
+      const body = kind === 'recipe' ? { recipeId: targetId } : { videoId: targetId }
+      supabase.functions.invoke(emailFn, { body }).catch(() => {})
     }
     setBusy(false)
   }

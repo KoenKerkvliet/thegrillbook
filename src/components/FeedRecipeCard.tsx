@@ -74,11 +74,12 @@ export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
         )}
         <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-line">
           <LikeButton
-            recipeId={recipe.id}
+            kind="recipe"
+            targetId={recipe.id}
             initiallyLiked={recipe.likedByMe}
             initialCount={recipe.likeCount}
           />
-          <ShareButton recipeId={recipe.id} />
+          <ShareButton kind="recipe" targetId={recipe.id} />
           <SaveButton recipeId={recipe.id} initiallySavedAsId={recipe.savedAsId} />
         </div>
       </div>

@@ -1,3 +1,7 @@
+export function getYoutubeThumbnail(videoId: string): string {
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+}
+
 export function extractYoutubeId(url: string): string | null {
   try {
     const u = new URL(url)

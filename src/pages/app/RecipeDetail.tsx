@@ -144,7 +144,9 @@ export default function RecipeDetail() {
         {recipe.rating != null && <StarRating value={recipe.rating} size="md" />}
         {recipe.cook_time_minutes != null && <span>{recipe.cook_time_minutes} min</span>}
         {recipe.servings != null && <span>{recipe.servings} personen</span>}
-        {!isOwner && <LikeButton recipeId={recipe.id} initiallyLiked={likedByMe} initialCount={likeCount} />}
+        {!isOwner && (
+          <LikeButton kind="recipe" targetId={recipe.id} initiallyLiked={likedByMe} initialCount={likeCount} />
+        )}
         {isOwner && (
           <span className="text-cream/50">
             {likeCount} {likeCount === 1 ? 'like' : 'likes'}

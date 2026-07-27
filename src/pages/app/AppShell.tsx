@@ -99,6 +99,13 @@ function NewMenu() {
             🔥 BBQ moment loggen
           </NavLink>
           <NavLink
+            to="/app/video/nieuw"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
+          >
+            📺 Video delen
+          </NavLink>
+          <NavLink
             to="/app/kookboek/nieuw"
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
@@ -180,6 +187,12 @@ export default function AppShell() {
               className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
             >
               🔥 Vuur aan
+            </NavLink>
+            <NavLink
+              to="/app/video/nieuw"
+              className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
+            >
+              📺 Video
             </NavLink>
             <NavLink
               to="/app/kookboek/nieuw"

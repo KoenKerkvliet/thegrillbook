@@ -13,6 +13,7 @@ import Kookboek from './pages/app/Kookboek'
 import RecipeForm from './pages/app/RecipeForm'
 import RecipeDetail from './pages/app/RecipeDetail'
 import MomentForm from './pages/app/MomentForm'
+import VideoForm from './pages/app/VideoForm'
 import Chefs from './pages/app/Chefs'
 import ChefProfile from './pages/app/ChefProfile'
 import Profile from './pages/app/Profile'
@@ -43,6 +44,7 @@ function App() {
             <Route path="kookboek/:id/bewerken" element={<RecipeForm />} />
             <Route path="recept/:id" element={<RecipeDetail />} />
             <Route path="moment/nieuw" element={<MomentForm />} />
+            <Route path="video/nieuw" element={<VideoForm />} />
             <Route path="chefs" element={<Chefs />} />
             <Route path="chefs/:username" element={<ChefProfile />} />
             <Route path="profiel" element={<Profile />} />

@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FeedRecipeCard, type FeedRecipeData } from '../../components/FeedRecipeCard'
 import { MomentCard, type MomentCardData } from '../../components/MomentCard'
+import { VideoCard, type VideoCardData } from '../../components/VideoCard'
 import { FollowButton } from '../../components/FollowButton'
 import { RankBadge } from '../../components/RankBadge'
 import { StreakBadge } from '../../components/StreakBadge'
@@ -22,6 +23,7 @@ type Stats = {
 type FeedItem =
   | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData }
   | { kind: 'moment'; created_at: string; moment: MomentCardData; isOwner: boolean }
+  | { kind: 'video'; created_at: string; video: VideoCardData; isOwner: boolean }
 
 function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
   if (chefs.length === 0) return null
@@ -121,6 +123,15 @@ export default function Feed() {
         owner_id: string
         profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
       }> = []
+      let videoRows: Array<{
+        id: string
+        youtube_url: string
+        caption: string | null
+        is_recipe: boolean
+        created_at: string
+        owner_id: string
+        profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
+      }> = []
 
       // Recipes: only from chefs you follow — your own recipes live in Mijn kookboek.
       if (followingIds.length > 0) {
@@ -146,26 +157,42 @@ export default function Feed() {
         .order('created_at', { ascending: false })
       momentRows = momentData ?? []
 
+      // Videos: your own + chefs you follow — same reach as moments, feed-only.
+      const { data: videoData } = await supabase
+        .from('videos')
+        .select(
+          'id, youtube_url, caption, is_recipe, created_at, owner_id, profiles!videos_owner_id_fkey(username, display_name, avatar_url)',
+        )
+        .in('owner_id', momentOwnerIds)
+        .order('created_at', { ascending: false })
+      videoRows = videoData ?? []
+
       const recipeIds = recipeRows.map((r) => r.id)
-      const ownerIds = [...new Set([...recipeRows, ...momentRows].map((r) => r.owner_id))]
-      const [{ data: likeData }, { data: savedData }, { data: ownerPointsData }] = await Promise.all([
-        recipeIds.length
-          ? supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds)
-          : Promise.resolve({ data: [] as { recipe_id: string; user_id: string }[] }),
-        recipeIds.length
-          ? supabase
-              .from('recipes')
-              .select('id, forked_from_recipe_id')
-              .eq('owner_id', user!.id)
-              .in('forked_from_recipe_id', recipeIds)
-          : Promise.resolve({ data: [] as { id: string; forked_from_recipe_id: string | null }[] }),
-        ownerIds.length
-          ? supabase.rpc('get_chef_points_bulk', { user_ids: ownerIds })
-          : Promise.resolve({ data: [] as { user_id: string; points: number }[] }),
-      ])
+      const videoIds = videoRows.map((v) => v.id)
+      const ownerIds = [...new Set([...recipeRows, ...momentRows, ...videoRows].map((r) => r.owner_id))]
+      const [{ data: likeData }, { data: savedData }, { data: ownerPointsData }, { data: videoLikeData }] =
+        await Promise.all([
+          recipeIds.length
+            ? supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds)
+            : Promise.resolve({ data: [] as { recipe_id: string; user_id: string }[] }),
+          recipeIds.length
+            ? supabase
+                .from('recipes')
+                .select('id, forked_from_recipe_id')
+                .eq('owner_id', user!.id)
+                .in('forked_from_recipe_id', recipeIds)
+            : Promise.resolve({ data: [] as { id: string; forked_from_recipe_id: string | null }[] }),
+          ownerIds.length
+            ? supabase.rpc('get_chef_points_bulk', { user_ids: ownerIds })
+            : Promise.resolve({ data: [] as { user_id: string; points: number }[] }),
+          videoIds.length
+            ? supabase.from('video_likes').select('video_id, user_id').in('video_id', videoIds)
+            : Promise.resolve({ data: [] as { video_id: string; user_id: string }[] }),
+        ])
       const likeRows = likeData ?? []
       const savedMap = new Map((savedData ?? []).map((s) => [s.forked_from_recipe_id, s.id]))
       const ownerPointsMap = new Map((ownerPointsData ?? []).map((p) => [p.user_id, p.points]))
+      const videoLikeRows = videoLikeData ?? []
 
       if (cancelled) return
 
@@ -210,8 +237,30 @@ export default function Feed() {
         },
       }))
 
+      const videoItems: FeedItem[] = videoRows.map((v) => {
+        const likesForVideo = videoLikeRows.filter((l) => l.video_id === v.id)
+        return {
+          kind: 'video',
+          created_at: v.created_at,
+          isOwner: v.owner_id === user!.id,
+          video: {
+            id: v.id,
+            youtube_url: v.youtube_url,
+            caption: v.caption,
+            is_recipe: v.is_recipe,
+            created_at: v.created_at,
+            ownerUsername: v.profiles?.username ?? '?',
+            ownerDisplayName: v.profiles?.display_name ?? null,
+            ownerAvatarUrl: v.profiles?.avatar_url ?? null,
+            ownerPoints: ownerPointsMap.get(v.owner_id) ?? 0,
+            likeCount: likesForVideo.length,
+            likedByMe: likesForVideo.some((l) => l.user_id === user!.id),
+          },
+        }
+      })
+
       setItems(
-        [...recipeItems, ...momentItems].sort(
+        [...recipeItems, ...momentItems, ...videoItems].sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         ),
       )
@@ -260,6 +309,11 @@ export default function Feed() {
     await supabase.from('moments').delete().eq('id', id)
   }
 
+  async function handleDeleteVideo(id: string) {
+    setItems((prev) => prev && prev.filter((item) => !(item.kind === 'video' && item.video.id === id)))
+    await supabase.from('videos').delete().eq('id', id)
+  }
+
   if (items === null) {
     return <p className="text-cream/50">Feed laden...</p>
   }
@@ -270,8 +324,8 @@ export default function Feed() {
         <div className="text-center py-20">
           <p className="font-display text-2xl mb-3">Je feed is nog leeg</p>
           <p className="text-cream/60 mb-6">
-            Volg collega chefs om hun openbare recepten en momenten hier te zien verschijnen, of log
-            zelf een BBQ-moment.
+            Volg collega chefs om hun openbare recepten, momenten en video's hier te zien
+            verschijnen, of log zelf iets.
           </p>
           <Link
             to="/app/chefs"
@@ -282,23 +336,34 @@ export default function Feed() {
         </div>
       ) : (
         <p className="text-cream/60">
-          De chefs die je volgt hebben nog niks gedeeld — geen recepten, geen momenten.
+          De chefs die je volgt hebben nog niks gedeeld — geen recepten, momenten of video's.
         </p>
       )
     ) : (
       <div className="flex flex-col gap-6">
-        {items.map((item) =>
-          item.kind === 'recipe' ? (
-            <FeedRecipeCard key={`recipe-${item.recipe.id}`} recipe={item.recipe} />
-          ) : (
-            <MomentCard
-              key={`moment-${item.moment.id}`}
-              moment={item.moment}
+        {items.map((item) => {
+          if (item.kind === 'recipe') {
+            return <FeedRecipeCard key={`recipe-${item.recipe.id}`} recipe={item.recipe} />
+          }
+          if (item.kind === 'moment') {
+            return (
+              <MomentCard
+                key={`moment-${item.moment.id}`}
+                moment={item.moment}
+                isOwner={item.isOwner}
+                onDelete={handleDeleteMoment}
+              />
+            )
+          }
+          return (
+            <VideoCard
+              key={`video-${item.video.id}`}
+              video={item.video}
               isOwner={item.isOwner}
-              onDelete={handleDeleteMoment}
+              onDelete={handleDeleteVideo}
             />
-          ),
-        )}
+          )
+        })}
       </div>
     )
 
