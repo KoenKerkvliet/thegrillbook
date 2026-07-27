@@ -35,9 +35,6 @@ function ProfileRow({
             <RankIcon points={points} />
           </p>
           <p className="text-sm text-cream/50 truncate">@{profile.username}</p>
-          {profile.bbq_brand && (
-            <p className="text-xs text-flame truncate">🔥 {profile.bbq_brand}</p>
-          )}
         </div>
       </Link>
       <FollowButton targetUserId={profile.id} initiallyFollowing={following} onToggled={onToggled} />

@@ -47,6 +47,38 @@ export type Database = {
           },
         ]
       }
+      hardware_items: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          position: number
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          position?: number
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          position?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hardware_items_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logbook_entries: {
         Row: {
           body: string
@@ -190,7 +222,6 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          bbq_brand: string | null
           bio: string | null
           created_at: string
           display_name: string | null
@@ -199,7 +230,6 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
-          bbq_brand?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -208,7 +238,6 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
-          bbq_brand?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null

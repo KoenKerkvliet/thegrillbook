@@ -44,8 +44,8 @@ export default function Privacy() {
               <li>
                 <strong className="text-cream">Accountgegevens</strong> — e-mailadres, wachtwoord
                 (versleuteld opgeslagen door onze inlogprovider, wij zien 'm nooit in leesbare
-                vorm), gebruikersnaam, weergavenaam, profielfoto, bio en favoriete BBQ-merk als je
-                die invult.
+                vorm), gebruikersnaam, weergavenaam, profielfoto, bio en de BBQ-hardware die je
+                zelf toevoegt.
               </li>
               <li>
                 <strong className="text-cream">Content die je zelf plaatst</strong> — recepten

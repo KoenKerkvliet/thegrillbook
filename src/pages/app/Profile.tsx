@@ -4,12 +4,14 @@ import { useAuth } from '../../lib/auth/useAuth'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
 import { RankBadge } from '../../components/RankBadge'
 import { StreakBadge } from '../../components/StreakBadge'
+import type { Tables } from '../../types/database'
+
+type HardwareItem = Tables<'hardware_items'>
 
 export default function Profile() {
   const { user, profile, refreshProfile } = useAuth()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
-  const [bbqBrand, setBbqBrand] = useState(profile?.bbq_brand ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -17,17 +19,43 @@ export default function Profile() {
   const [saved, setSaved] = useState(false)
   const [points, setPoints] = useState<number | null>(null)
   const [streak, setStreak] = useState<number | null>(null)
+  const [hardware, setHardware] = useState<HardwareItem[]>([])
+  const [newHardware, setNewHardware] = useState('')
+  const [addingHardware, setAddingHardware] = useState(false)
 
   useEffect(() => {
     if (!user) return
     Promise.all([
       supabase.rpc('get_chef_points', { target_user_id: user.id }),
       supabase.rpc('get_chef_streak', { target_user_id: user.id }),
-    ]).then(([pointsRes, streakRes]) => {
+      supabase.from('hardware_items').select('*').eq('owner_id', user.id).order('position'),
+    ]).then(([pointsRes, streakRes, hardwareRes]) => {
       setPoints(pointsRes.data ?? 0)
       setStreak(streakRes.data ?? 0)
+      setHardware(hardwareRes.data ?? [])
     })
   }, [user])
+
+  async function handleAddHardware(e: FormEvent) {
+    e.preventDefault()
+    if (!user || !newHardware.trim() || addingHardware) return
+    setAddingHardware(true)
+    const { data, error } = await supabase
+      .from('hardware_items')
+      .insert({ owner_id: user.id, text: newHardware.trim(), position: hardware.length })
+      .select('*')
+      .single()
+    if (!error && data) {
+      setHardware((prev) => [...prev, data])
+      setNewHardware('')
+    }
+    setAddingHardware(false)
+  }
+
+  async function handleDeleteHardware(id: string) {
+    setHardware((prev) => prev.filter((h) => h.id !== id))
+    await supabase.from('hardware_items').delete().eq('id', id)
+  }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -63,7 +91,6 @@ export default function Profile() {
         display_name: displayName || null,
         bio: bio || null,
         avatar_url: avatarUrl,
-        bbq_brand: bbqBrand || null,
       })
       .eq('id', user.id)
     await refreshProfile()
@@ -123,19 +150,6 @@ export default function Profile() {
         </div>
 
         <div>
-          <label className="block text-sm text-cream/60 mb-1" htmlFor="bbqBrand">
-            Favoriete merk / welke BBQ heb je?
-          </label>
-          <input
-            id="bbqBrand"
-            value={bbqBrand}
-            onChange={(e) => setBbqBrand(e.target.value)}
-            placeholder="bijv. Weber Master-Touch"
-            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-          />
-        </div>
-
-        <div>
           <label className="block text-sm text-cream/60 mb-1" htmlFor="bio">
             Bio
           </label>
@@ -159,6 +173,51 @@ export default function Profile() {
           {saved && <span className="text-sm text-cream/50">Opgeslagen ✓</span>}
         </div>
       </form>
+
+      <section>
+        <h2 className="font-display text-xl mb-1">Mijn hardware</h2>
+        <p className="text-xs text-cream/40 mb-3">
+          Grill, smoker, thermometer — log alles waar je mee werkt. Zichtbaar op je profiel.
+        </p>
+        <form onSubmit={handleAddHardware} className="flex gap-2 mb-4">
+          <input
+            value={newHardware}
+            onChange={(e) => setNewHardware(e.target.value)}
+            placeholder="bijv. Weber Master-Touch"
+            className="flex-1 rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+          <button
+            type="submit"
+            disabled={addingHardware || !newHardware.trim()}
+            aria-label="Item toevoegen"
+            title="Item toevoegen"
+            className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-4 py-2 rounded-md text-sm disabled:opacity-50"
+          >
+            +
+          </button>
+        </form>
+        <ul className="space-y-2">
+          {hardware.map((item) => (
+            <li
+              key={item.id}
+              className="flex items-center justify-between gap-3 bg-surface border border-line rounded-md px-3 py-2 text-sm"
+            >
+              <span className="text-cream/80">{item.text}</span>
+              <button
+                type="button"
+                onClick={() => handleDeleteHardware(item.id)}
+                className="text-cream/30 hover:text-flame shrink-0"
+                aria-label="Item verwijderen"
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+        {hardware.length === 0 && (
+          <p className="text-sm text-cream/40">Nog niks gelogd — begin met je grill of smoker.</p>
+        )}
+      </section>
     </div>
   )
 }
