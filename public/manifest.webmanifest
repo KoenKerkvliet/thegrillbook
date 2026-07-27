@@ -9,8 +9,8 @@
   "theme_color": "#0B0B0B",
   "icons": [
     {
-      "src": "/images/icon.png",
-      "sizes": "224x224",
+      "src": "/images/bbqheros-icon-invert.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
