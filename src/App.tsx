@@ -19,6 +19,7 @@ import VideoForm from './pages/app/VideoForm'
 import Chefs from './pages/app/Chefs'
 import ChefProfile from './pages/app/ChefProfile'
 import Profile from './pages/app/Profile'
+import Admin from './pages/app/Admin'
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
             <Route path="chefs" element={<Chefs />} />
             <Route path="chefs/:username" element={<ChefProfile />} />
             <Route path="profiel" element={<Profile />} />
+            <Route path="admin" element={<Admin />} />
           </Route>
         </Routes>
       </AuthProvider>

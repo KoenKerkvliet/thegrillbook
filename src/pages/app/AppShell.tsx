@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/auth/useAuth'
 import { Logo } from '../../components/Logo'
 import { supabase } from '../../lib/supabaseClient'
 import { startOfThisWeek } from '../../lib/relativeTime'
+import { isAdminEmail } from '../../lib/admin'
 
 const NAV_LINKS = [
   { to: '/app', label: 'Feed', end: true },
@@ -12,10 +13,15 @@ const NAV_LINKS = [
   { to: '/app/profiel', label: 'Profiel', end: false },
 ]
 
+const ADMIN_LINK = { to: '/app/admin', label: 'Admin', end: false }
+
 function SidebarNav() {
+  const { user } = useAuth()
+  const links = isAdminEmail(user?.email) ? [...NAV_LINKS, ADMIN_LINK] : NAV_LINKS
+
   return (
     <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
-      {NAV_LINKS.map((link) => (
+      {links.map((link) => (
         <NavLink
           key={link.to}
           to={link.to}
