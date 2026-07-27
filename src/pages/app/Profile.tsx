@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
+import { RankBadge } from '../../components/RankBadge'
 
 export default function Profile() {
   const { user, profile, refreshProfile } = useAuth()
@@ -13,6 +14,14 @@ export default function Profile() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [points, setPoints] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .rpc('get_chef_points', { target_user_id: user.id })
+      .then(({ data }) => setPoints(data ?? 0))
+  }, [user])
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -57,78 +66,87 @@ export default function Profile() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Mijn profiel</h1>
-
+    <div className="max-w-lg flex flex-col gap-8">
       <div>
-        <p className="text-sm text-cream/60 mb-1">Gebruikersnaam</p>
-        <p className="text-cream">@{profile?.username}</p>
-      </div>
-
-      <div>
-        <label className="block text-sm text-cream/60 mb-2">Avatar</label>
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-surface-2 overflow-hidden flex items-center justify-center text-cream/40">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              profile?.username.slice(0, 2).toUpperCase()
-            )}
+        <h1 className="font-display text-3xl mb-4">Mijn profiel</h1>
+        {points !== null && (
+          <div className="bg-surface border border-line rounded-md p-4">
+            <RankBadge points={points} showProgress />
           </div>
-          <input type="file" accept="image/*" onChange={handleAvatarChange} className="text-sm" />
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div>
+          <p className="text-sm text-cream/60 mb-1">Gebruikersnaam</p>
+          <p className="text-cream">@{profile?.username}</p>
         </div>
-        {uploading && <p className="text-xs text-cream/50 mt-1">Uploaden...</p>}
-        {uploadError && <p className="text-xs text-flame mt-1">{uploadError}</p>}
-      </div>
 
-      <div>
-        <label className="block text-sm text-cream/60 mb-1" htmlFor="displayName">
-          Naam
-        </label>
-        <input
-          id="displayName"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-        />
-      </div>
+        <div>
+          <label className="block text-sm text-cream/60 mb-2">Avatar</label>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-surface-2 overflow-hidden flex items-center justify-center text-cream/40">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                profile?.username.slice(0, 2).toUpperCase()
+              )}
+            </div>
+            <input type="file" accept="image/*" onChange={handleAvatarChange} className="text-sm" />
+          </div>
+          {uploading && <p className="text-xs text-cream/50 mt-1">Uploaden...</p>}
+          {uploadError && <p className="text-xs text-flame mt-1">{uploadError}</p>}
+        </div>
 
-      <div>
-        <label className="block text-sm text-cream/60 mb-1" htmlFor="bbqBrand">
-          Favoriete merk / welke BBQ heb je?
-        </label>
-        <input
-          id="bbqBrand"
-          value={bbqBrand}
-          onChange={(e) => setBbqBrand(e.target.value)}
-          placeholder="bijv. Weber Master-Touch"
-          className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-        />
-      </div>
+        <div>
+          <label className="block text-sm text-cream/60 mb-1" htmlFor="displayName">
+            Naam
+          </label>
+          <input
+            id="displayName"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm text-cream/60 mb-1" htmlFor="bio">
-          Bio
-        </label>
-        <textarea
-          id="bio"
-          rows={3}
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-        />
-      </div>
+        <div>
+          <label className="block text-sm text-cream/60 mb-1" htmlFor="bbqBrand">
+            Favoriete merk / welke BBQ heb je?
+          </label>
+          <input
+            id="bbqBrand"
+            value={bbqBrand}
+            onChange={(e) => setBbqBrand(e.target.value)}
+            placeholder="bijv. Weber Master-Touch"
+            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+        </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={saving || uploading}
-          className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md px-5 py-2.5 disabled:opacity-50"
-        >
-          {saving ? 'Opslaan...' : 'Opslaan'}
-        </button>
-        {saved && <span className="text-sm text-cream/50">Opgeslagen ✓</span>}
-      </div>
-    </form>
+        <div>
+          <label className="block text-sm text-cream/60 mb-1" htmlFor="bio">
+            Bio
+          </label>
+          <textarea
+            id="bio"
+            rows={3}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={saving || uploading}
+            className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md px-5 py-2.5 disabled:opacity-50"
+          >
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+          {saved && <span className="text-sm text-cream/50">Opgeslagen ✓</span>}
+        </div>
+      </form>
+    </div>
   )
 }

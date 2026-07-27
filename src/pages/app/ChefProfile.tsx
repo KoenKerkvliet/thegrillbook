@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FollowButton } from '../../components/FollowButton'
+import { RankBadge } from '../../components/RankBadge'
 import { RecipeCard, type RecipeCardData } from '../../components/RecipeCard'
 import type { Tables } from '../../types/database'
 
@@ -14,6 +15,7 @@ export default function ChefProfile() {
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined)
   const [recipes, setRecipes] = useState<RecipeCardData[] | null>(null)
   const [following, setFollowing] = useState(false)
+  const [points, setPoints] = useState<number | null>(null)
 
   useEffect(() => {
     if (!username || !user) return
@@ -32,7 +34,7 @@ export default function ChefProfile() {
         return
       }
 
-      const [{ data: recipeData }, { data: followRow }] = await Promise.all([
+      const [{ data: recipeData }, { data: followRow }, { data: pointsData }] = await Promise.all([
         supabase
           .from('recipes')
           .select(
@@ -46,6 +48,7 @@ export default function ChefProfile() {
           .eq('follower_id', user!.id)
           .eq('following_id', profileData.id)
           .maybeSingle(),
+        supabase.rpc('get_chef_points', { target_user_id: profileData.id }),
       ])
 
       if (cancelled) return
@@ -54,6 +57,7 @@ export default function ChefProfile() {
       // and then having its stale internal state outlive a later prop update.
       setFollowing(Boolean(followRow))
       setRecipes(recipeData ?? [])
+      setPoints(pointsData ?? 0)
       setProfile(profileData)
     }
 
@@ -104,6 +108,12 @@ export default function ChefProfile() {
           onToggled={setFollowing}
         />
       </div>
+
+      {points !== null && (
+        <div className="bg-surface border border-line rounded-md p-4 max-w-sm">
+          <RankBadge points={points} showProgress />
+        </div>
+      )}
 
       {profile.bio && <p className="text-cream/70 max-w-xl">{profile.bio}</p>}
 

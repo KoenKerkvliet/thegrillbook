@@ -5,11 +5,12 @@ import { useAuth } from '../../lib/auth/useAuth'
 import { FeedRecipeCard, type FeedRecipeData } from '../../components/FeedRecipeCard'
 import { MomentCard, type MomentCardData } from '../../components/MomentCard'
 import { FollowButton } from '../../components/FollowButton'
+import { RankBadge } from '../../components/RankBadge'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
 
-type Stats = { recipes: number; privateRecipes: number; followers: number }
+type Stats = { recipes: number; privateRecipes: number; followers: number; points: number }
 
 type FeedItem =
   | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData }
@@ -54,6 +55,8 @@ function StatsCard({ stats }: { stats: Stats | null }) {
       <h2 className="text-xs font-semibold tracking-widest text-cream/50 uppercase">
         Jouw stats
       </h2>
+      <RankBadge points={stats.points} showProgress />
+      <div className="border-t border-line" />
       {[
         ['Recepten', stats.recipes],
         ['Privé', stats.privateRecipes],
@@ -202,20 +205,23 @@ export default function Feed() {
       const { data: suggestedRows } = await suggestedQuery.order('created_at', { ascending: false }).limit(3)
       if (!cancelled) setSuggested(suggestedRows ?? [])
 
-      const [{ count: recipeCount }, { count: privateCount }, { count: followerCount }] = await Promise.all([
-        supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('owner_id', user!.id),
-        supabase
-          .from('recipes')
-          .select('id', { count: 'exact', head: true })
-          .eq('owner_id', user!.id)
-          .eq('is_public', false),
-        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', user!.id),
-      ])
+      const [{ count: recipeCount }, { count: privateCount }, { count: followerCount }, { data: pointsData }] =
+        await Promise.all([
+          supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('owner_id', user!.id),
+          supabase
+            .from('recipes')
+            .select('id', { count: 'exact', head: true })
+            .eq('owner_id', user!.id)
+            .eq('is_public', false),
+          supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', user!.id),
+          supabase.rpc('get_chef_points', { target_user_id: user!.id }),
+        ])
       if (!cancelled) {
         setStats({
           recipes: recipeCount ?? 0,
           privateRecipes: privateCount ?? 0,
           followers: followerCount ?? 0,
+          points: pointsData ?? 0,
         })
       }
     }
