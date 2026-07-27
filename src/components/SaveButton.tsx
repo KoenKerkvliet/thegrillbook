@@ -75,10 +75,11 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
     return (
       <Link
         to={`/app/recept/${savedAsId}`}
-        className="flex items-center gap-1.5 text-sm rounded-md px-3 py-1.5 border border-flame/40 text-flame"
+        aria-label="In je kookboek"
+        title="In je kookboek"
+        className="flex items-center justify-center w-9 h-9 rounded-md border border-flame/40 text-flame"
       >
-        <span>✓</span>
-        <span>In kookboek</span>
+        <span aria-hidden="true">✓</span>
       </Link>
     )
   }
@@ -88,11 +89,11 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
       type="button"
       onClick={handleSave}
       disabled={busy}
+      aria-label="Opslaan in je eigen kookboek"
       title="Opslaan in je eigen kookboek"
-      className="flex items-center gap-1.5 text-sm rounded-md px-3 py-1.5 border border-line text-cream/70 hover:border-cream/40 transition-colors disabled:opacity-50"
+      className="flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70 hover:border-cream/40 transition-colors disabled:opacity-50"
     >
-      <span>📥</span>
-      <span>{busy ? 'Bezig...' : 'Opslaan'}</span>
+      <span aria-hidden="true">{busy ? '…' : '📥'}</span>
     </button>
   )
 }
