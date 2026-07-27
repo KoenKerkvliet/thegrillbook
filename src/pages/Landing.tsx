@@ -335,7 +335,17 @@ export default function Landing() {
       </section>
 
       <footer className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-cream/40">
-        <p>BBQHeros — kook je eigen shit. 2026</p>
+        <p>
+          BBQHeros — kook je eigen shit. 2026 · Gemaakt door{' '}
+          <a
+            href="https://designpixels.nl"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-cream/70"
+          >
+            Design Pixels
+          </a>
+        </p>
         <div className="flex gap-6">
           <Link to="/privacy" className="hover:text-cream/70">
             Privacy
@@ -343,7 +353,7 @@ export default function Landing() {
           <Link to="/voorwaarden" className="hover:text-cream/70">
             Voorwaarden
           </Link>
-          <a href="mailto:koenkerkvliet@gmail.com" className="hover:text-cream/70">
+          <a href="mailto:info@designpixels.nl" className="hover:text-cream/70">
             Contact
           </a>
         </div>

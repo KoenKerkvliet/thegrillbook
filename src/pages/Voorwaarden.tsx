@@ -33,8 +33,8 @@ export default function Voorwaarden() {
             <p>
               Je bent zelf verantwoordelijk voor het geheimhouden van je wachtwoord en voor wat er
               met je account gebeurt. Merk je iets vreemds op je account? Mail dan naar{' '}
-              <a href="mailto:koenkerkvliet@gmail.com" className="text-flame hover:underline">
-                koenkerkvliet@gmail.com
+              <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
+                info@designpixels.nl
               </a>
               .
             </p>
@@ -88,8 +88,8 @@ export default function Voorwaarden() {
             <h2 className="font-display text-2xl mb-3">Je account opzeggen</h2>
             <p>
               Je kunt op elk moment stoppen. Mail naar{' '}
-              <a href="mailto:koenkerkvliet@gmail.com" className="text-flame hover:underline">
-                koenkerkvliet@gmail.com
+              <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
+                info@designpixels.nl
               </a>{' '}
               en we verwijderen je account en gegevens. Meer hierover staat in ons{' '}
               <Link to="/privacy" className="text-flame hover:underline">

@@ -29,10 +29,10 @@ export default function Privacy() {
           <section>
             <h2 className="font-display text-2xl mb-3">Wie is verantwoordelijk</h2>
             <p>
-              BBQHeros wordt beheerd door Koen Kerkvliet. Voor alle vragen over deze pagina of je
-              gegevens kun je mailen naar{' '}
-              <a href="mailto:koenkerkvliet@gmail.com" className="text-flame hover:underline">
-                koenkerkvliet@gmail.com
+              BBQHeros wordt beheerd door Koen Kerkvliet (Design Pixels). Voor alle vragen over
+              deze pagina of je gegevens kun je mailen naar{' '}
+              <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
+                info@designpixels.nl
               </a>
               .
             </p>
@@ -107,8 +107,8 @@ export default function Privacy() {
             <h2 className="font-display text-2xl mb-3">Hoe lang we gegevens bewaren</h2>
             <p>
               Zolang je account bestaat. Wil je stoppen met BBQHeros? Mail naar{' '}
-              <a href="mailto:koenkerkvliet@gmail.com" className="text-flame hover:underline">
-                koenkerkvliet@gmail.com
+              <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
+                info@designpixels.nl
               </a>{' '}
               en we verwijderen je account en alle bijbehorende gegevens.
             </p>
@@ -120,8 +120,8 @@ export default function Privacy() {
               Je hebt altijd het recht om in te zien welke gegevens we van je hebben, ze te laten
               corrigeren, ze te laten verwijderen, of een kopie te ontvangen. Stuur daarvoor een
               mail naar{' '}
-              <a href="mailto:koenkerkvliet@gmail.com" className="text-flame hover:underline">
-                koenkerkvliet@gmail.com
+              <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
+                info@designpixels.nl
               </a>
               . Ben je het niet eens met hoe we met je gegevens omgaan, dan kun je een klacht
               indienen bij de Autoriteit Persoonsgegevens.
