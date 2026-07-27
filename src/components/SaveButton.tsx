@@ -93,7 +93,7 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
       title="Opslaan in je eigen kookboek"
       className="flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70 hover:border-cream/40 transition-colors disabled:opacity-50"
     >
-      <span aria-hidden="true">{busy ? '…' : '📥'}</span>
+      <span aria-hidden="true">{busy ? '…' : '🔖'}</span>
     </button>
   )
 }

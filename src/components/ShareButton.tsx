@@ -52,7 +52,7 @@ export function ShareButton({ recipeId }: { recipeId: string }) {
         title="Delen met een gebruiker"
         className="flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70 hover:border-cream/40 transition-colors"
       >
-        <span aria-hidden="true">📤</span>
+        <span aria-hidden="true">✈️</span>
       </button>
       {open && (
         <div className="absolute z-10 top-full left-0 mt-2 w-64 bg-surface border border-line rounded-md p-3 shadow-lg">
