@@ -29,3 +29,8 @@ body {
   text-transform: uppercase;
   letter-spacing: -0.01em;
 }
+
+/* Browsers don't give <button> a pointer cursor by default (unlike <a>) — do it globally. */
+button:not(:disabled) {
+  cursor: pointer;
+}
