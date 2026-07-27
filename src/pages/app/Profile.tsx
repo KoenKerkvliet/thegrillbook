@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
@@ -9,7 +10,8 @@ import type { Tables } from '../../types/database'
 type HardwareItem = Tables<'hardware_items'>
 
 export default function Profile() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, refreshProfile, signOut } = useAuth()
+  const navigate = useNavigate()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
@@ -22,6 +24,13 @@ export default function Profile() {
   const [hardware, setHardware] = useState<HardwareItem[]>([])
   const [newHardware, setNewHardware] = useState('')
   const [addingHardware, setAddingHardware] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSaved, setPasswordSaved] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -96,6 +105,40 @@ export default function Profile() {
     await refreshProfile()
     setSaving(false)
     setSaved(true)
+  }
+
+  async function handleChangePassword(e: FormEvent) {
+    e.preventDefault()
+    if (newPassword.length < 6) {
+      setPasswordError('Wachtwoord moet minstens 6 tekens zijn.')
+      return
+    }
+    setPasswordError(null)
+    setPasswordSaved(false)
+    setPasswordSaving(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setPasswordSaving(false)
+    if (error) {
+      setPasswordError(error.message)
+      return
+    }
+    setNewPassword('')
+    setPasswordSaved(true)
+  }
+
+  async function handleDeleteAccount(e: FormEvent) {
+    e.preventDefault()
+    if (!profile || deleteConfirmText !== profile.username) return
+    setDeleting(true)
+    setDeleteError(null)
+    const { data, error } = await supabase.functions.invoke('delete-own-account')
+    if (error || data?.success === false) {
+      setDeleteError(data?.error || 'Account verwijderen mislukt.')
+      setDeleting(false)
+      return
+    }
+    await signOut()
+    navigate('/', { replace: true })
   }
 
   return (
@@ -217,6 +260,61 @@ export default function Profile() {
         {hardware.length === 0 && (
           <p className="text-sm text-cream/40">Nog niks gelogd — begin met je grill of smoker.</p>
         )}
+      </section>
+
+      <section>
+        <h2 className="font-display text-xl mb-3">Wachtwoord wijzigen</h2>
+        <form onSubmit={handleChangePassword} className="flex flex-col gap-3 max-w-sm">
+          <input
+            type="password"
+            required
+            minLength={6}
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Nieuw wachtwoord"
+            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+          {passwordError && <p className="text-sm text-flame">{passwordError}</p>}
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={passwordSaving}
+              className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md px-5 py-2.5 text-sm disabled:opacity-50"
+            >
+              {passwordSaving ? 'Bezig...' : 'Wachtwoord wijzigen'}
+            </button>
+            {passwordSaved && <span className="text-sm text-cream/50">Gewijzigd ✓</span>}
+          </div>
+        </form>
+      </section>
+
+      <section className="border border-flame/30 rounded-md p-5">
+        <h2 className="font-display text-xl mb-1 text-flame">Account verwijderen</h2>
+        <p className="text-xs text-cream/50 mb-4">
+          Dit verwijdert al je recepten, momenten, video's en overige gegevens definitief. Dit kan
+          niet ongedaan gemaakt worden.
+        </p>
+        <form onSubmit={handleDeleteAccount} className="flex flex-col gap-3 max-w-sm">
+          <label className="text-sm text-cream/60" htmlFor="deleteConfirm">
+            Typ <strong className="text-cream">@{profile?.username}</strong> om te bevestigen
+          </label>
+          <input
+            id="deleteConfirm"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            placeholder={profile?.username}
+            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+          {deleteError && <p className="text-sm text-flame">{deleteError}</p>}
+          <button
+            type="submit"
+            disabled={deleting || !profile || deleteConfirmText !== profile.username}
+            className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md px-5 py-2.5 text-sm disabled:opacity-50 self-start"
+          >
+            {deleting ? 'Bezig...' : 'Verwijder mijn account'}
+          </button>
+        </form>
       </section>
     </div>
   )

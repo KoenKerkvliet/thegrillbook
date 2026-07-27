@@ -71,6 +71,7 @@ serve(async (req) => {
         username: profile?.username ?? null,
         displayName: profile?.display_name ?? null,
         avatarUrl: profile?.avatar_url ?? null,
+        archivedAt: profile?.archived_at ?? null,
         recipeCount,
         momentCount,
         points: pointEligibleRecipes * 2 + momentCount * 1,

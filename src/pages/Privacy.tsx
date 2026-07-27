@@ -106,11 +106,13 @@ export default function Privacy() {
           <section>
             <h2 className="font-display text-2xl mb-3">Hoe lang we gegevens bewaren</h2>
             <p>
-              Zolang je account bestaat. Wil je stoppen met BBQHeros? Mail naar{' '}
+              Zolang je account bestaat. Wil je stoppen met BBQHeros? Verwijder je account zelf via
+              je profielpagina, of mail naar{' '}
               <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
                 info@designpixels.nl
               </a>{' '}
-              en we verwijderen je account en alle bijbehorende gegevens.
+              — in beide gevallen verwijderen we je account en alle bijbehorende gegevens direct
+              en definitief.
             </p>
           </section>
 

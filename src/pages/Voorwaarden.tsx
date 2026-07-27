@@ -87,7 +87,8 @@ export default function Voorwaarden() {
           <section>
             <h2 className="font-display text-2xl mb-3">Je account opzeggen</h2>
             <p>
-              Je kunt op elk moment stoppen. Mail naar{' '}
+              Je kunt op elk moment stoppen. Verwijder je account zelf via je profielpagina, of
+              mail naar{' '}
               <a href="mailto:info@designpixels.nl" className="text-flame hover:underline">
                 info@designpixels.nl
               </a>{' '}

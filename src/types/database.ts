@@ -221,6 +221,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          archived_at: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -229,6 +230,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          archived_at?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -237,6 +239,7 @@ export type Database = {
           username: string
         }
         Update: {
+          archived_at?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string

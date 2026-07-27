@@ -13,9 +13,96 @@ type AdminUser = {
   username: string | null
   displayName: string | null
   avatarUrl: string | null
+  archivedAt: string | null
   recipeCount: number
   momentCount: number
   points: number
+}
+
+type Tab = 'active' | 'archived'
+
+function UserRow({
+  target,
+  tab,
+  busy,
+  onArchive,
+  onRestore,
+  onDelete,
+  onResetPassword,
+}: {
+  target: AdminUser
+  tab: Tab
+  busy: boolean
+  onArchive: (target: AdminUser) => void
+  onRestore: (target: AdminUser) => void
+  onDelete: (target: AdminUser) => void
+  onResetPassword: (target: AdminUser) => void
+}) {
+  return (
+    <tr className="border-b border-line/50">
+      <td className="py-3 pr-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
+            {target.avatarUrl ? (
+              <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              (target.username ?? '??').slice(0, 2).toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate">{target.displayName || target.username || '—'}</p>
+            {target.username && <p className="text-xs text-cream/40">@{target.username}</p>}
+          </div>
+        </div>
+      </td>
+      <td className="py-3 pr-4 text-cream/70">{target.email ?? '—'}</td>
+      <td className="py-3 pr-4 text-cream/50">{relativeTime(target.createdAt)}</td>
+      <td className="py-3 pr-4 text-right">{target.points}</td>
+      <td className="py-3 pr-4 text-right">{target.recipeCount}</td>
+      <td className="py-3 pr-4 text-right">{target.momentCount}</td>
+      <td className="py-3 pl-4 text-right whitespace-nowrap">
+        {tab === 'active' ? (
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => onResetPassword(target)}
+              disabled={busy}
+              className="text-xs text-cream/50 hover:text-cream disabled:opacity-50"
+            >
+              Wachtwoord resetten
+            </button>
+            <button
+              type="button"
+              onClick={() => onArchive(target)}
+              disabled={busy}
+              className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
+            >
+              Archiveren
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => onRestore(target)}
+              disabled={busy}
+              className="text-xs text-cream/50 hover:text-cream disabled:opacity-50"
+            >
+              Herstellen
+            </button>
+            <button
+              type="button"
+              onClick={() => onDelete(target)}
+              disabled={busy}
+              className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
+            >
+              Verwijderen
+            </button>
+          </div>
+        )}
+      </td>
+    </tr>
+  )
 }
 
 export default function Admin() {
@@ -23,68 +110,109 @@ export default function Admin() {
   const admin = isAdminEmail(user?.email)
   const [users, setUsers] = useState<AdminUser[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [tab, setTab] = useState<Tab>('active')
+  const [busyId, setBusyId] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!admin) return
-    supabase.functions.invoke('admin-list-users').then(({ data, error: invokeError }) => {
+  function loadUsers() {
+    return supabase.functions.invoke('admin-list-users').then(({ data, error: invokeError }) => {
       if (invokeError || data?.success === false) {
         setError(data?.error || 'Gebruikers laden mislukt.')
         return
       }
       setUsers(data.users)
     })
+  }
+
+  useEffect(() => {
+    if (!admin) return
+    loadUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin])
 
+  const activeUsers = useMemo(() => (users ?? []).filter((u) => !u.archivedAt), [users])
+  const archivedUsers = useMemo(() => (users ?? []).filter((u) => u.archivedAt), [users])
+
   const filtered = useMemo(() => {
-    if (!users) return null
+    const list = tab === 'active' ? activeUsers : archivedUsers
     const q = query.trim().toLowerCase()
-    if (!q) return users
-    return users.filter(
+    if (!q) return list
+    return list.filter(
       (u) =>
         u.username?.toLowerCase().includes(q) ||
         u.displayName?.toLowerCase().includes(q) ||
         u.email?.toLowerCase().includes(q),
     )
-  }, [users, query])
+  }, [tab, activeUsers, archivedUsers, query])
 
   const stats = useMemo(() => {
     if (!users) return null
     const weekStart = startOfThisWeek().getTime()
     return {
-      totalUsers: users.length,
-      totalRecipes: users.reduce((sum, u) => sum + u.recipeCount, 0),
-      totalMoments: users.reduce((sum, u) => sum + u.momentCount, 0),
-      newThisWeek: users.filter((u) => new Date(u.createdAt).getTime() >= weekStart).length,
+      totalUsers: activeUsers.length,
+      archivedUsers: archivedUsers.length,
+      totalRecipes: activeUsers.reduce((sum, u) => sum + u.recipeCount, 0),
+      totalMoments: activeUsers.reduce((sum, u) => sum + u.momentCount, 0),
+      newThisWeek: activeUsers.filter((u) => new Date(u.createdAt).getTime() >= weekStart).length,
     }
-  }, [users])
+  }, [users, activeUsers, archivedUsers])
 
   if (!admin) {
     return <Navigate to="/app" replace />
   }
 
+  async function callAdminFn(fn: string, userId: string) {
+    setBusyId(userId)
+    setError(null)
+    setNotice(null)
+    const { data, error: invokeError } = await supabase.functions.invoke(fn, { body: { userId } })
+    if (invokeError || data?.success === false) {
+      setError(data?.error || 'Actie mislukt.')
+      setBusyId(null)
+      return false
+    }
+    setBusyId(null)
+    return true
+  }
+
+  function labelFor(target: AdminUser) {
+    return target.username ? `@${target.username}` : target.email || 'deze gebruiker'
+  }
+
+  async function handleArchive(target: AdminUser) {
+    if (!confirm(`Weet je zeker dat je ${labelFor(target)} wilt archiveren? Diegene kan dan niet meer inloggen, maar de gegevens blijven bewaard.`)) {
+      return
+    }
+    if (await callAdminFn('admin-archive-user', target.id)) await loadUsers()
+  }
+
+  async function handleRestore(target: AdminUser) {
+    if (await callAdminFn('admin-restore-user', target.id)) await loadUsers()
+  }
+
   async function handleDelete(target: AdminUser) {
-    const label = target.username ? `@${target.username}` : target.email || 'deze gebruiker'
     if (
       !confirm(
-        `Weet je zeker dat je ${label} wilt verwijderen? Dit verwijdert al hun recepten, momenten, video's en overige gegevens, en kan niet ongedaan gemaakt worden.`,
+        `Weet je zeker dat je ${labelFor(target)} definitief wilt verwijderen? Dit verwijdert al hun recepten, momenten, video's en overige gegevens, en kan niet ongedaan gemaakt worden.`,
       )
     ) {
       return
     }
-    setDeletingId(target.id)
-    setError(null)
-    const { data, error: invokeError } = await supabase.functions.invoke('admin-delete-user', {
-      body: { userId: target.id },
-    })
-    if (invokeError || data?.success === false) {
-      setError(data?.error || 'Verwijderen mislukt.')
-      setDeletingId(null)
+    if (await callAdminFn('admin-delete-user', target.id)) await loadUsers()
+  }
+
+  async function handleResetPassword(target: AdminUser) {
+    if (!target.email) {
+      setError('Geen e-mailadres bekend voor deze gebruiker.')
       return
     }
-    setUsers((prev) => prev && prev.filter((u) => u.id !== target.id))
-    setDeletingId(null)
+    setBusyId(target.id)
+    setError(null)
+    setNotice(null)
+    await supabase.functions.invoke('send-password-reset-email', { body: { email: target.email } })
+    setBusyId(null)
+    setNotice(`Reset-link verstuurd naar ${target.email}.`)
   }
 
   return (
@@ -95,15 +223,17 @@ export default function Admin() {
       </div>
 
       {error && <p className="text-sm text-flame">{error}</p>}
+      {notice && <p className="text-sm text-cream/60">{notice}</p>}
 
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           {(
             [
               ['Chefs', stats.totalUsers],
               ['Recepten', stats.totalRecipes],
               ['Momenten', stats.totalMoments],
               ['Nieuw deze week', stats.newThisWeek],
+              ['Gearchiveerd', stats.archivedUsers],
             ] as const
           ).map(([label, value]) => (
             <div key={label} className="bg-surface border border-line rounded-md p-4">
@@ -114,6 +244,26 @@ export default function Admin() {
         </div>
       )}
 
+      <div className="flex items-center gap-2 border-b border-line">
+        {(
+          [
+            ['active', `Actief${users ? ` (${activeUsers.length})` : ''}`],
+            ['archived', `Archief${users ? ` (${archivedUsers.length})` : ''}`],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setTab(value)}
+            className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              tab === value ? 'border-flame text-cream' : 'border-transparent text-cream/50 hover:text-cream'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -121,9 +271,9 @@ export default function Admin() {
         className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
       />
 
-      {filtered === null && <p className="text-cream/50 text-sm">Laden...</p>}
+      {users === null && <p className="text-cream/50 text-sm">Laden...</p>}
 
-      {filtered && (
+      {users !== null && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -139,42 +289,24 @@ export default function Admin() {
             </thead>
             <tbody>
               {filtered.map((u) => (
-                <tr key={u.id} className="border-b border-line/50">
-                  <td className="py-3 pr-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
-                        {u.avatarUrl ? (
-                          <img src={u.avatarUrl} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          (u.username ?? '??').slice(0, 2).toUpperCase()
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate">{u.displayName || u.username || '—'}</p>
-                        {u.username && <p className="text-xs text-cream/40">@{u.username}</p>}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 pr-4 text-cream/70">{u.email ?? '—'}</td>
-                  <td className="py-3 pr-4 text-cream/50">{relativeTime(u.createdAt)}</td>
-                  <td className="py-3 pr-4 text-right">{u.points}</td>
-                  <td className="py-3 pr-4 text-right">{u.recipeCount}</td>
-                  <td className="py-3 pr-4 text-right">{u.momentCount}</td>
-                  <td className="py-3 pl-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(u)}
-                      disabled={deletingId === u.id}
-                      className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
-                    >
-                      {deletingId === u.id ? 'Bezig...' : 'Verwijderen'}
-                    </button>
-                  </td>
-                </tr>
+                <UserRow
+                  key={u.id}
+                  target={u}
+                  tab={tab}
+                  busy={busyId === u.id}
+                  onArchive={handleArchive}
+                  onRestore={handleRestore}
+                  onDelete={handleDelete}
+                  onResetPassword={handleResetPassword}
+                />
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <p className="text-cream/50 text-sm py-4">Niemand gevonden.</p>}
+          {filtered.length === 0 && (
+            <p className="text-cream/50 text-sm py-4">
+              {tab === 'active' ? 'Niemand gevonden.' : 'Niemand gearchiveerd.'}
+            </p>
+          )}
         </div>
       )}
     </div>
