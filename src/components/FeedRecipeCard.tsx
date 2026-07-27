@@ -25,7 +25,7 @@ export type FeedRecipeData = {
   savedAsId: string | null
 }
 
-export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
+export function FeedRecipeCard({ recipe, isOwner }: { recipe: FeedRecipeData; isOwner?: boolean }) {
   return (
     <article className="bg-surface border border-line">
       <div className="flex items-center gap-3 px-5 py-4">
@@ -81,7 +81,7 @@ export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
             initialCount={recipe.likeCount}
           />
           <ShareButton kind="recipe" targetId={recipe.id} />
-          <SaveButton recipeId={recipe.id} initiallySavedAsId={recipe.savedAsId} />
+          {!isOwner && <SaveButton recipeId={recipe.id} initiallySavedAsId={recipe.savedAsId} />}
           <MailRecipeButton recipeId={recipe.id} />
         </div>
       </div>

@@ -21,7 +21,7 @@ type Stats = {
 }
 
 type FeedItem =
-  | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData }
+  | { kind: 'recipe'; created_at: string; recipe: FeedRecipeData; isOwner: boolean }
   | { kind: 'moment'; created_at: string; moment: MomentCardData; isOwner: boolean }
   | { kind: 'video'; created_at: string; video: VideoCardData; isOwner: boolean }
 
@@ -133,18 +133,24 @@ export default function Feed() {
         profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
       }> = []
 
-      // Recipes: only from chefs you follow — your own recipes live in Mijn kookboek.
+      // Recipes: your own (any privacy) + public recipes from chefs you follow.
+      const recipeSelect =
+        'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)'
+      const recipeQueries = [
+        supabase.from('recipes').select(recipeSelect).eq('owner_id', user!.id).order('created_at', { ascending: false }),
+      ]
       if (followingIds.length > 0) {
-        const { data } = await supabase
-          .from('recipes')
-          .select(
-            'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)',
-          )
-          .eq('is_public', true)
-          .in('owner_id', followingIds)
-          .order('created_at', { ascending: false })
-        recipeRows = data ?? []
+        recipeQueries.push(
+          supabase
+            .from('recipes')
+            .select(recipeSelect)
+            .eq('is_public', true)
+            .in('owner_id', followingIds)
+            .order('created_at', { ascending: false }),
+        )
       }
+      const recipeResults = await Promise.all(recipeQueries)
+      recipeRows = recipeResults.flatMap((r) => r.data ?? [])
 
       // Moments: your own + chefs you follow — moments only live in the feed, nowhere else.
       const momentOwnerIds = [user!.id, ...followingIds]
@@ -211,6 +217,7 @@ export default function Feed() {
         return {
           kind: 'recipe',
           created_at: r.created_at,
+          isOwner: r.owner_id === user!.id,
           recipe: {
             id: r.id,
             title: r.title,
@@ -358,7 +365,13 @@ export default function Feed() {
       <div className="flex flex-col gap-6">
         {items.map((item) => {
           if (item.kind === 'recipe') {
-            return <FeedRecipeCard key={`recipe-${item.recipe.id}`} recipe={item.recipe} />
+            return (
+              <FeedRecipeCard
+                key={`recipe-${item.recipe.id}`}
+                recipe={item.recipe}
+                isOwner={item.isOwner}
+              />
+            )
           }
           if (item.kind === 'moment') {
             return (
