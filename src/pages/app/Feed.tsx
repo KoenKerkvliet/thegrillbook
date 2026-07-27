@@ -310,10 +310,10 @@ export default function Feed() {
       <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
         <div>{feedColumn}</div>
         <div className="flex flex-col gap-6">
-          <SuggestedChefs chefs={suggested} />
           <div className="hidden lg:block">
             <StatsCard stats={stats} />
           </div>
+          <SuggestedChefs chefs={suggested} />
         </div>
       </div>
     </div>
