@@ -47,12 +47,12 @@ function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
   )
 }
 
-function KookboekStats({ stats }: { stats: Stats | null }) {
+function StatsCard({ stats }: { stats: Stats | null }) {
   if (!stats) return null
   return (
     <div className="bg-surface border border-line p-5 flex flex-col gap-3">
       <h2 className="text-xs font-semibold tracking-widest text-cream/50 uppercase">
-        Jouw kookboek
+        Jouw stats
       </h2>
       {[
         ['Recepten', stats.recipes],
@@ -274,11 +274,18 @@ export default function Feed() {
     )
 
   return (
-    <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
-      <div>{feedColumn}</div>
-      <div className="flex flex-col gap-6">
-        <SuggestedChefs chefs={suggested} />
-        <KookboekStats stats={stats} />
+    <div>
+      <div className="lg:hidden mb-6">
+        <StatsCard stats={stats} />
+      </div>
+      <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
+        <div>{feedColumn}</div>
+        <div className="flex flex-col gap-6">
+          <SuggestedChefs chefs={suggested} />
+          <div className="hidden lg:block">
+            <StatsCard stats={stats} />
+          </div>
+        </div>
       </div>
     </div>
   )
