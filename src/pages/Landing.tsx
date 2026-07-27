@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { StarRating } from '../components/StarRating'
@@ -128,6 +129,33 @@ function MockFeedCard() {
         </div>
       </div>
     </article>
+  )
+}
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    function onScroll() {
+      setVisible(window.scrollY > 600)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      aria-label="Naar boven"
+      title="Naar boven"
+      className={`fixed bottom-6 right-6 z-20 w-11 h-11 rounded-full bg-flame hover:bg-flame-dark text-ink flex items-center justify-center text-lg shadow-lg transition-all ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
+      }`}
+    >
+      ↑
+    </button>
   )
 }
 
@@ -320,6 +348,8 @@ export default function Landing() {
           </a>
         </div>
       </footer>
+
+      <BackToTop />
     </div>
   )
 }
