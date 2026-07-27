@@ -276,14 +276,19 @@ export default function Landing() {
       </section>
 
       <section className="bg-cream text-ink">
-        <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
-          {STEPS.map((step) => (
-            <div key={step.n}>
-              <p className="font-display text-3xl text-flame mb-3">{step.n}</p>
-              <h2 className="font-display text-xl mb-2">{step.title}</h2>
-              <p className="text-ink/70 text-sm leading-relaxed">{step.body}</p>
-            </div>
-          ))}
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <h2 className="font-display text-3xl sm:text-4xl leading-[0.95] mb-12">
+            Hoe het werkt.
+          </h2>
+          <div className="grid md:grid-cols-3 gap-10">
+            {STEPS.map((step) => (
+              <div key={step.n}>
+                <p className="font-display text-3xl text-flame mb-3">{step.n}</p>
+                <h3 className="font-display text-xl mb-2">{step.title}</h3>
+                <p className="text-ink/70 text-sm leading-relaxed">{step.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -304,6 +309,12 @@ export default function Landing() {
       <footer className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-cream/40">
         <p>BBQHeros — kook je eigen shit. 2026</p>
         <div className="flex gap-6">
+          <Link to="/privacy" className="hover:text-cream/70">
+            Privacy
+          </Link>
+          <Link to="/voorwaarden" className="hover:text-cream/70">
+            Voorwaarden
+          </Link>
           <a href="mailto:koenkerkvliet@gmail.com" className="hover:text-cream/70">
             Contact
           </a>

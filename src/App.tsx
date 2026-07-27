@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth/AuthProvider'
 import { ProtectedRoute } from './lib/auth/ProtectedRoute'
 import Landing from './pages/Landing'
+import Privacy from './pages/Privacy'
+import Voorwaarden from './pages/Voorwaarden'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Verify from './pages/Verify'
@@ -24,6 +26,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/voorwaarden" element={<Voorwaarden />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registreren" element={<Signup />} />
           <Route path="/bevestigen" element={<Verify />} />
