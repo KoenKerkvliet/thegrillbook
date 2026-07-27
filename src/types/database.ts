@@ -47,6 +47,38 @@ export type Database = {
           },
         ]
       }
+      logbook_entries: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logbook_entries_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moment_likes: {
         Row: {
           created_at: string
