@@ -47,6 +47,82 @@ export type Database = {
           },
         ]
       }
+      moment_likes: {
+        Row: {
+          created_at: string
+          moment_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          moment_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          moment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_likes_moment_id_fkey"
+            columns: ["moment_id"]
+            isOneToOne: false
+            referencedRelation: "moments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moment_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moment_shares: {
+        Row: {
+          created_at: string
+          moment_id: string
+          shared_by: string
+          shared_with: string
+        }
+        Insert: {
+          created_at?: string
+          moment_id: string
+          shared_by: string
+          shared_with: string
+        }
+        Update: {
+          created_at?: string
+          moment_id?: string
+          shared_by?: string
+          shared_with?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_shares_moment_id_fkey"
+            columns: ["moment_id"]
+            isOneToOne: false
+            referencedRelation: "moments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moment_shares_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moment_shares_shared_with_fkey"
+            columns: ["shared_with"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moments: {
         Row: {
           caption: string | null

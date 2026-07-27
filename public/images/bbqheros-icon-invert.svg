@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100" role="img" aria-label="BBQHeros icoon omgekeerd">
+  <title>BBQHeros icoon omgekeerd</title>
+  <rect width="100" height="100" fill="#0B0B0B"></rect>
+  <g fill="#FF5B14">
+    <g transform="translate(-27,5) rotate(-13 50 52)"><path d="M50 24c7 10 11 14 11 21 0 7-5 13-11 13s-11-6-11-13c0-5 3-8 6-12 1 4 2 6 4 7-2-6-1-11 1-16z"></path></g>
+    <path d="M50 12c10 14 16 20 16 29 0 10-7 18-16 18s-16-8-16-18c0-6 4-11 8-16 1 5 3 8 6 9-2-8-2-15 2-22z"></path>
+    <g transform="translate(26,7) rotate(14 50 52) scale(0.94)"><path d="M50 24c7 10 11 14 11 21 0 7-5 13-11 13s-11-6-11-13c0-5 3-8 6-12 1 4 2 6 4 7-2-6-1-11 1-16z"></path></g>
+    <rect x="12" y="63" width="76" height="9"></rect>
+    <rect x="12" y="79" width="76" height="9"></rect>
+  </g>
+</svg>

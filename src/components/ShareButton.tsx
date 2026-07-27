@@ -4,12 +4,31 @@ import { useAuth } from '../lib/auth/useAuth'
 import type { Tables } from '../types/database'
 
 type Profile = Tables<'profiles'>
-type Kind = 'recipe' | 'video'
+type Kind = 'recipe' | 'video' | 'moment'
 
 async function insertShare(kind: Kind, targetId: string, sharedBy: string, sharedWith: string) {
-  return kind === 'recipe'
-    ? supabase.from('recipe_shares').insert({ recipe_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
-    : supabase.from('video_shares').insert({ video_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
+  if (kind === 'recipe')
+    return supabase
+      .from('recipe_shares')
+      .insert({ recipe_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
+  if (kind === 'video')
+    return supabase
+      .from('video_shares')
+      .insert({ video_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
+  return supabase
+    .from('moment_shares')
+    .insert({ moment_id: targetId, shared_by: sharedBy, shared_with: sharedWith })
+}
+
+const SHARE_EMAIL_FN: Record<Kind, string> = {
+  recipe: 'send-recipe-shared-email',
+  video: 'send-video-shared-email',
+  moment: 'send-moment-shared-email',
+}
+const SHARE_EMAIL_KEY: Record<Kind, string> = {
+  recipe: 'recipeId',
+  video: 'videoId',
+  moment: 'momentId',
 }
 
 export function ShareButton({ kind, targetId }: { kind: Kind; targetId: string }) {
@@ -41,12 +60,11 @@ export function ShareButton({ kind, targetId }: { kind: Kind; targetId: string }
     const { error } = await insertShare(kind, targetId, user.id, target.id)
     if (!error || error.code === '23505') {
       setSharedWithIds((prev) => new Set(prev).add(target.id))
-      const emailFn = kind === 'recipe' ? 'send-recipe-shared-email' : 'send-video-shared-email'
-      const body =
-        kind === 'recipe'
-          ? { recipeId: targetId, sharedWithUserId: target.id }
-          : { videoId: targetId, sharedWithUserId: target.id }
-      supabase.functions.invoke(emailFn, { body }).catch(() => {})
+      supabase.functions
+        .invoke(SHARE_EMAIL_FN[kind], {
+          body: { [SHARE_EMAIL_KEY[kind]]: targetId, sharedWithUserId: target.id },
+        })
+        .catch(() => {})
     }
     setBusy(false)
   }

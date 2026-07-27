@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth/useAuth'
 
-type Kind = 'recipe' | 'video'
+type Kind = 'recipe' | 'video' | 'moment'
 
 type Props = {
   kind: Kind
@@ -11,16 +11,29 @@ type Props = {
   initialCount: number
 }
 
+const LIKE_EMAIL_FN: Record<Kind, string> = {
+  recipe: 'send-like-email',
+  video: 'send-video-like-email',
+  moment: 'send-moment-like-email',
+}
+const LIKE_EMAIL_KEY: Record<Kind, string> = {
+  recipe: 'recipeId',
+  video: 'videoId',
+  moment: 'momentId',
+}
+
 async function insertLike(kind: Kind, targetId: string, userId: string) {
-  return kind === 'recipe'
-    ? supabase.from('recipe_likes').insert({ recipe_id: targetId, user_id: userId })
-    : supabase.from('video_likes').insert({ video_id: targetId, user_id: userId })
+  if (kind === 'recipe') return supabase.from('recipe_likes').insert({ recipe_id: targetId, user_id: userId })
+  if (kind === 'video') return supabase.from('video_likes').insert({ video_id: targetId, user_id: userId })
+  return supabase.from('moment_likes').insert({ moment_id: targetId, user_id: userId })
 }
 
 async function deleteLike(kind: Kind, targetId: string, userId: string) {
-  return kind === 'recipe'
-    ? supabase.from('recipe_likes').delete().eq('recipe_id', targetId).eq('user_id', userId)
-    : supabase.from('video_likes').delete().eq('video_id', targetId).eq('user_id', userId)
+  if (kind === 'recipe')
+    return supabase.from('recipe_likes').delete().eq('recipe_id', targetId).eq('user_id', userId)
+  if (kind === 'video')
+    return supabase.from('video_likes').delete().eq('video_id', targetId).eq('user_id', userId)
+  return supabase.from('moment_likes').delete().eq('moment_id', targetId).eq('user_id', userId)
 }
 
 export function LikeButton({ kind, targetId, initiallyLiked, initialCount }: Props) {
@@ -44,9 +57,9 @@ export function LikeButton({ kind, targetId, initiallyLiked, initialCount }: Pro
       setLiked(wasLiked)
       setCount((c) => (wasLiked ? c + 1 : c - 1))
     } else if (!wasLiked) {
-      const emailFn = kind === 'recipe' ? 'send-like-email' : 'send-video-like-email'
-      const body = kind === 'recipe' ? { recipeId: targetId } : { videoId: targetId }
-      supabase.functions.invoke(emailFn, { body }).catch(() => {})
+      supabase.functions
+        .invoke(LIKE_EMAIL_FN[kind], { body: { [LIKE_EMAIL_KEY[kind]]: targetId } })
+        .catch(() => {})
     }
     setBusy(false)
   }

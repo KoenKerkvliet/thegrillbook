@@ -1,5 +1,7 @@
 import { relativeTime } from '../lib/relativeTime'
 import { RankIcon } from './RankIcon'
+import { LikeButton } from './LikeButton'
+import { ShareButton } from './ShareButton'
 
 export type MomentCardData = {
   id: string
@@ -10,6 +12,8 @@ export type MomentCardData = {
   ownerDisplayName: string | null
   ownerAvatarUrl: string | null
   ownerPoints: number
+  likeCount: number
+  likedByMe: boolean
 }
 
 type Props = {
@@ -72,6 +76,16 @@ export function MomentCard({ moment, isOwner, onDelete }: Props) {
           </p>
         </div>
       )}
+
+      <div className={`flex flex-wrap items-center gap-2 px-5 pb-5 ${moment.caption ? 'pt-0' : 'pt-5'}`}>
+        <LikeButton
+          kind="moment"
+          targetId={moment.id}
+          initiallyLiked={moment.likedByMe}
+          initialCount={moment.likeCount}
+        />
+        <ShareButton kind="moment" targetId={moment.id} />
+      </div>
     </article>
   )
 }

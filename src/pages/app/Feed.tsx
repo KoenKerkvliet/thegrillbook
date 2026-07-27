@@ -169,30 +169,40 @@ export default function Feed() {
 
       const recipeIds = recipeRows.map((r) => r.id)
       const videoIds = videoRows.map((v) => v.id)
+      const momentIds = momentRows.map((m) => m.id)
       const ownerIds = [...new Set([...recipeRows, ...momentRows, ...videoRows].map((r) => r.owner_id))]
-      const [{ data: likeData }, { data: savedData }, { data: ownerPointsData }, { data: videoLikeData }] =
-        await Promise.all([
-          recipeIds.length
-            ? supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds)
-            : Promise.resolve({ data: [] as { recipe_id: string; user_id: string }[] }),
-          recipeIds.length
-            ? supabase
-                .from('recipes')
-                .select('id, forked_from_recipe_id')
-                .eq('owner_id', user!.id)
-                .in('forked_from_recipe_id', recipeIds)
-            : Promise.resolve({ data: [] as { id: string; forked_from_recipe_id: string | null }[] }),
-          ownerIds.length
-            ? supabase.rpc('get_chef_points_bulk', { user_ids: ownerIds })
-            : Promise.resolve({ data: [] as { user_id: string; points: number }[] }),
-          videoIds.length
-            ? supabase.from('video_likes').select('video_id, user_id').in('video_id', videoIds)
-            : Promise.resolve({ data: [] as { video_id: string; user_id: string }[] }),
-        ])
+      const [
+        { data: likeData },
+        { data: savedData },
+        { data: ownerPointsData },
+        { data: videoLikeData },
+        { data: momentLikeData },
+      ] = await Promise.all([
+        recipeIds.length
+          ? supabase.from('recipe_likes').select('recipe_id, user_id').in('recipe_id', recipeIds)
+          : Promise.resolve({ data: [] as { recipe_id: string; user_id: string }[] }),
+        recipeIds.length
+          ? supabase
+              .from('recipes')
+              .select('id, forked_from_recipe_id')
+              .eq('owner_id', user!.id)
+              .in('forked_from_recipe_id', recipeIds)
+          : Promise.resolve({ data: [] as { id: string; forked_from_recipe_id: string | null }[] }),
+        ownerIds.length
+          ? supabase.rpc('get_chef_points_bulk', { user_ids: ownerIds })
+          : Promise.resolve({ data: [] as { user_id: string; points: number }[] }),
+        videoIds.length
+          ? supabase.from('video_likes').select('video_id, user_id').in('video_id', videoIds)
+          : Promise.resolve({ data: [] as { video_id: string; user_id: string }[] }),
+        momentIds.length
+          ? supabase.from('moment_likes').select('moment_id, user_id').in('moment_id', momentIds)
+          : Promise.resolve({ data: [] as { moment_id: string; user_id: string }[] }),
+      ])
       const likeRows = likeData ?? []
       const savedMap = new Map((savedData ?? []).map((s) => [s.forked_from_recipe_id, s.id]))
       const ownerPointsMap = new Map((ownerPointsData ?? []).map((p) => [p.user_id, p.points]))
       const videoLikeRows = videoLikeData ?? []
+      const momentLikeRows = momentLikeData ?? []
 
       if (cancelled) return
 
@@ -221,21 +231,26 @@ export default function Feed() {
         }
       })
 
-      const momentItems: FeedItem[] = momentRows.map((m) => ({
-        kind: 'moment',
-        created_at: m.created_at,
-        isOwner: m.owner_id === user!.id,
-        moment: {
-          id: m.id,
-          photo_url: m.photo_url,
-          caption: m.caption,
+      const momentItems: FeedItem[] = momentRows.map((m) => {
+        const likesForMoment = momentLikeRows.filter((l) => l.moment_id === m.id)
+        return {
+          kind: 'moment',
           created_at: m.created_at,
-          ownerUsername: m.profiles?.username ?? '?',
-          ownerDisplayName: m.profiles?.display_name ?? null,
-          ownerAvatarUrl: m.profiles?.avatar_url ?? null,
-          ownerPoints: ownerPointsMap.get(m.owner_id) ?? 0,
-        },
-      }))
+          isOwner: m.owner_id === user!.id,
+          moment: {
+            id: m.id,
+            photo_url: m.photo_url,
+            caption: m.caption,
+            created_at: m.created_at,
+            ownerUsername: m.profiles?.username ?? '?',
+            ownerDisplayName: m.profiles?.display_name ?? null,
+            ownerAvatarUrl: m.profiles?.avatar_url ?? null,
+            ownerPoints: ownerPointsMap.get(m.owner_id) ?? 0,
+            likeCount: likesForMoment.length,
+            likedByMe: likesForMoment.some((l) => l.user_id === user!.id),
+          },
+        }
+      })
 
       const videoItems: FeedItem[] = videoRows.map((v) => {
         const likesForVideo = videoLikeRows.filter((l) => l.video_id === v.id)
