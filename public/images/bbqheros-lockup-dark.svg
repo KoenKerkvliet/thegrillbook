@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="140" viewBox="0 0 560 140" role="img" aria-label="BBQHeros logo">
+  <title>BBQHeros lockup op zwart</title>
+  <rect width="560" height="140" fill="#0B0B0B"></rect>
+  <g transform="translate(16,24) scale(0.92)">
+    <g fill="#FF5B14">
+      <g transform="translate(-27,5) rotate(-13 50 52)"><path d="M50 24c7 10 11 14 11 21 0 7-5 13-11 13s-11-6-11-13c0-5 3-8 6-12 1 4 2 6 4 7-2-6-1-11 1-16z"></path></g>
+      <path d="M50 12c10 14 16 20 16 29 0 10-7 18-16 18s-16-8-16-18c0-6 4-11 8-16 1 5 3 8 6 9-2-8-2-15 2-22z"></path>
+      <g transform="translate(26,7) rotate(14 50 52) scale(0.94)"><path d="M50 24c7 10 11 14 11 21 0 7-5 13-11 13s-11-6-11-13c0-5 3-8 6-12 1 4 2 6 4 7-2-6-1-11 1-16z"></path></g>
+      <rect x="12" y="63" width="76" height="9"></rect>
+      <rect x="12" y="79" width="76" height="9"></rect>
+    </g>
+  </g>
+  <g transform="translate(128,16) scale(0.83682,0.84)">
+      <g transform="translate(0,0)"><path d="M0,0 H40 L54,14 V38 L46,50 L54,62 V86 L40,100 H0 Z M18,16 H36 V42 H18 Z M18,58 H36 V84 H18 Z" fill="#F2EDE4" fill-rule="evenodd"></path></g>
+      <g transform="translate(62,0)"><path d="M0,0 H40 L54,14 V38 L46,50 L54,62 V86 L40,100 H0 Z M18,16 H36 V42 H18 Z M18,58 H36 V84 H18 Z" fill="#F2EDE4" fill-rule="evenodd"></path></g>
+      <g transform="translate(124,0)"><path d="M0,0 H54 V100 H0 Z M18,18 H36 V82 H18 Z" fill="#F2EDE4" fill-rule="evenodd"></path><path d="M28,64 H60 V88 H28 Z" fill="#F2EDE4" fill-rule="evenodd"></path></g>
+      <g transform="translate(186,0)"><path d="M0,0 H18 V41 H36 V0 H54 V100 H36 V59 H18 V100 H0 Z" fill="#FF5B14" fill-rule="evenodd"></path></g>
+      <g transform="translate(248,0)"><path d="M0,0 H48 V18 H18 V41 H42 V59 H18 V82 H48 V100 H0 Z" fill="#FF5B14" fill-rule="evenodd"></path></g>
+      <g transform="translate(304,0)"><path d="M0,0 H40 L54,14 V40 L44,52 L54,76 V100 H36 V66 H18 V100 H0 Z M18,16 H36 V46 H18 Z" fill="#FF5B14" fill-rule="evenodd"></path></g>
+      <g transform="translate(366,0)"><path d="M0,0 H54 V100 H0 Z M18,18 H36 V82 H18 Z" fill="#FF5B14" fill-rule="evenodd"></path></g>
+      <g transform="translate(428,0)"><path d="M50,0 V18 H18 V41 H50 V100 H0 V82 H32 V59 H0 V0 Z" fill="#FF5B14" fill-rule="evenodd"></path></g>
+  </g>
+  <rect x="128" y="112" width="26" height="3" fill="#FF5B14"></rect>
+  <text x="166" y="119" textLength="362" lengthAdjust="spacing" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="14" fill="#FF5B14">KOOK JE EIGEN SHIT</text>
+</svg>
