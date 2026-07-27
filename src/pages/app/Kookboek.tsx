@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
@@ -172,11 +172,38 @@ function LogbookTab({ user }: { user: { id: string } }) {
   )
 }
 
+type SortOption = 'nieuwste' | 'rating' | 'kooktijd'
+
+const SORT_LABELS: Record<SortOption, string> = {
+  nieuwste: 'Nieuwste eerst',
+  rating: 'Hoogst gewaardeerd',
+  kooktijd: 'Kortste bereidingstijd',
+}
+
 export default function Kookboek() {
   const { user } = useAuth()
   const [tab, setTab] = useState<'recepten' | 'tutorials' | 'aantekeningen'>('recepten')
   const [recipes, setRecipes] = useState<RecipeCardData[] | null>(null)
   const [tutorials, setTutorials] = useState<Tutorial[] | null>(null)
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<SortOption>('nieuwste')
+
+  const filteredRecipes = useMemo(() => {
+    if (!recipes) return null
+    const q = query.trim().toLowerCase()
+    const list = q ? recipes.filter((r) => r.title.toLowerCase().includes(q)) : [...recipes]
+    if (sort === 'rating') {
+      list.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
+    } else if (sort === 'kooktijd') {
+      list.sort((a, b) => {
+        if (a.cook_time_minutes == null) return 1
+        if (b.cook_time_minutes == null) return -1
+        return a.cook_time_minutes - b.cook_time_minutes
+      })
+    }
+    // 'nieuwste' keeps the created_at-desc order the query already fetched in.
+    return list
+  }, [recipes, query, sort])
 
   useEffect(() => {
     if (!user) return
@@ -265,11 +292,38 @@ export default function Kookboek() {
             <p className="text-cream/60">Nog niks gelogd. Tijd om iets op het vuur te gooien.</p>
           )}
           {recipes && recipes.length > 0 && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Zoek op titel..."
+                  className="flex-1 rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+                />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortOption)}
+                  className="rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm"
+                >
+                  {(Object.keys(SORT_LABELS) as SortOption[]).map((option) => (
+                    <option key={option} value={option}>
+                      {SORT_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {filteredRecipes?.length === 0 && (
+                <p className="text-cream/50 text-sm">Niets gevonden voor "{query}".</p>
+              )}
+              {filteredRecipes && filteredRecipes.length > 0 && (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredRecipes.map((recipe) => (
+                    <RecipeCard key={recipe.id} recipe={recipe} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

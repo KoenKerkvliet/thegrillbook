@@ -34,3 +34,27 @@ body {
 button:not(:disabled) {
   cursor: pointer;
 }
+
+/* Print: app chrome never prints, and printable content forces black-on-white
+   regardless of the dark theme's explicit text colors (print:hidden alone
+   only handles visibility, not the cream-on-dark palette). */
+@media print {
+  header,
+  aside {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .print-content,
+  .print-content * {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .print-content a {
+    color: #000 !important;
+  }
+}

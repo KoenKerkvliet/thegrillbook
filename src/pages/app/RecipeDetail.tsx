@@ -102,15 +102,18 @@ export default function RecipeDetail() {
   const isOwner = user?.id === recipe.owner_id
 
   return (
-    <div className="max-w-3xl">
-      <Link to={isOwner ? '/app/kookboek' : '/app'} className="text-sm text-cream/50 hover:text-cream">
+    <div className="max-w-3xl print-content">
+      <Link
+        to={isOwner ? '/app/kookboek' : '/app'}
+        className="print:hidden text-sm text-cream/50 hover:text-cream"
+      >
         ← Terug
       </Link>
 
       <div className="flex items-start justify-between gap-4 mt-3 mb-1">
         <h1 className="font-display text-4xl">{recipe.title}</h1>
         {isOwner && (
-          <div className="flex gap-3 shrink-0 pt-2">
+          <div className="print:hidden flex gap-3 shrink-0 pt-2">
             <Link to={`/app/kookboek/${recipe.id}/bewerken`} className="text-sm text-cream/60 hover:text-cream">
               Bewerken
             </Link>
@@ -146,19 +149,37 @@ export default function RecipeDetail() {
         {recipe.cook_time_minutes != null && <span>{recipe.cook_time_minutes} min</span>}
         {recipe.servings != null && <span>{recipe.servings} personen</span>}
         {!isOwner && (
-          <LikeButton kind="recipe" targetId={recipe.id} initiallyLiked={likedByMe} initialCount={likeCount} />
+          <div className="print:hidden">
+            <LikeButton
+              kind="recipe"
+              targetId={recipe.id}
+              initiallyLiked={likedByMe}
+              initialCount={likeCount}
+            />
+          </div>
         )}
         {isOwner && (
-          <span className="text-cream/50">
+          <span className="print:hidden text-cream/50">
             {likeCount} {likeCount === 1 ? 'like' : 'likes'}
           </span>
         )}
         {!recipe.is_public && (
-          <span className="text-[10px] tracking-wide text-cream/40 border border-line rounded px-1.5 py-0.5">
+          <span className="print:hidden text-[10px] tracking-wide text-cream/40 border border-line rounded px-1.5 py-0.5">
             PRIVÉ
           </span>
         )}
-        <MailRecipeButton recipeId={recipe.id} />
+        <div className="print:hidden">
+          <MailRecipeButton recipeId={recipe.id} />
+        </div>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          aria-label="Print dit recept"
+          title="Print dit recept"
+          className="print:hidden flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70 hover:border-cream/40 transition-colors"
+        >
+          <span aria-hidden="true">🖨️</span>
+        </button>
       </div>
 
       {ingredients.length > 0 && (
@@ -184,7 +205,7 @@ export default function RecipeDetail() {
       )}
 
       {recipe.youtube_url && (
-        <section className="mb-6">
+        <section className="print:hidden mb-6">
           <h2 className="font-display text-xl mb-2">Video</h2>
           {(() => {
             const videoId = extractYoutubeId(recipe.youtube_url!)
@@ -213,7 +234,7 @@ export default function RecipeDetail() {
       )}
 
       {isOwner && (
-        <section className="mt-8 border-t border-line pt-6">
+        <section className="print:hidden mt-8 border-t border-line pt-6">
           <h2 className="font-display text-xl mb-3">Mijn notities</h2>
           <p className="text-xs text-cream/40 mb-3">Alleen jij ziet dit, ook als het recept openbaar is.</p>
           <form onSubmit={handleAddNote} className="flex gap-2 mb-4">
