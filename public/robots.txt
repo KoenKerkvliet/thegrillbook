@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /login
+Disallow: /registreren
+Disallow: /wachtwoord-vergeten
+Disallow: /wachtwoord-resetten
+Disallow: /bevestigen
+
+Sitemap: https://bbqheros.nl/sitemap.xml
