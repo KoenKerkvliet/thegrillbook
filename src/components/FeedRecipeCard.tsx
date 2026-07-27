@@ -3,6 +3,7 @@ import { StarRating } from './StarRating'
 import { LikeButton } from './LikeButton'
 import { ShareButton } from './ShareButton'
 import { SaveButton } from './SaveButton'
+import { MailRecipeButton } from './MailRecipeButton'
 import { RankIcon } from './RankIcon'
 import { relativeTime } from '../lib/relativeTime'
 
@@ -81,6 +82,7 @@ export function FeedRecipeCard({ recipe }: { recipe: FeedRecipeData }) {
           />
           <ShareButton kind="recipe" targetId={recipe.id} />
           <SaveButton recipeId={recipe.id} initiallySavedAsId={recipe.savedAsId} />
+          <MailRecipeButton recipeId={recipe.id} />
         </div>
       </div>
     </article>

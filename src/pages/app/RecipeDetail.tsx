@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { StarRating } from '../../components/StarRating'
 import { LikeButton } from '../../components/LikeButton'
+import { MailRecipeButton } from '../../components/MailRecipeButton'
 import { extractYoutubeId } from '../../lib/youtube'
 import type { Tables } from '../../types/database'
 
@@ -157,6 +158,7 @@ export default function RecipeDetail() {
             PRIVÉ
           </span>
         )}
+        <MailRecipeButton recipeId={recipe.id} />
       </div>
 
       {ingredients.length > 0 && (
