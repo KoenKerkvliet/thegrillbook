@@ -175,7 +175,7 @@ export default function Landing() {
           </a>
         </nav>
         <div className="flex items-center gap-4">
-          <Link to="/login" className="text-sm text-cream/80 hover:text-cream hidden sm:inline">
+          <Link to="/login" className="text-sm text-cream/80 hover:text-cream">
             Inloggen
           </Link>
           <Link

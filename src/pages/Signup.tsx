@@ -62,6 +62,9 @@ export default function Signup() {
   return (
     <div className="min-h-svh bg-ink text-cream flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
+        <Link to="/" className="text-sm text-cream/50 hover:text-cream flex justify-center mb-6">
+          ← Terug naar de homepage
+        </Link>
         <Link to="/" className="flex justify-center mb-10">
           <Logo className="h-14" />
         </Link>
