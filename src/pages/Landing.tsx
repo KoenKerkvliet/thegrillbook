@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Logo } from '../components/Logo'
 import { StarRating } from '../components/StarRating'
 import { RankIcon } from '../components/RankIcon'
 import { RANKS } from '../lib/ranks'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const STEPS = [
   {
@@ -59,7 +63,7 @@ const FEATURES = [
 function RecipePreviewCard() {
   return (
     <div className="relative">
-      <div className="rounded-lg overflow-hidden border border-line bg-surface">
+      <div className="gsap-hero-card rounded-lg overflow-hidden border border-line bg-surface">
         <div className="aspect-[4/3] overflow-hidden">
           <img
             src={`${import.meta.env.BASE_URL}images/hero-hamburger.webp`}
@@ -68,7 +72,7 @@ function RecipePreviewCard() {
           />
         </div>
       </div>
-      <div className="hidden sm:flex absolute -bottom-5 -left-5 items-center gap-2 bg-surface border border-line rounded-md px-4 py-3 shadow-lg">
+      <div className="gsap-hero-badge hidden sm:flex absolute -bottom-5 -left-5 items-center gap-2 bg-surface border border-line rounded-md px-4 py-3 shadow-lg">
         <span className="text-xl leading-none" aria-hidden="true">
           🍖
         </span>
@@ -117,7 +121,9 @@ function MockFeedCard() {
         </p>
         <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-line">
           <span className="flex items-center gap-1.5 text-sm rounded-md px-3 py-1.5 border bg-flame/10 border-flame text-flame">
-            <span aria-hidden="true">🔥</span>
+            <span className="gsap-flame inline-block" aria-hidden="true">
+              🔥
+            </span>
             <span>12</span>
           </span>
           <span className="flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70">
@@ -160,8 +166,102 @@ function BackToTop() {
 }
 
 export default function Landing() {
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      // Hero entrance — punchy stamped-in text, then card + badge.
+      gsap
+        .timeline({ defaults: { ease: 'power4.out' } })
+        .from('.gsap-eyebrow', { opacity: 0, x: -24, duration: 0.5 })
+        .from('.gsap-hero-line', { yPercent: 110, duration: 0.85, stagger: 0.1 }, '-=0.15')
+        .from('.gsap-hero-sub', { opacity: 0, y: 16, duration: 0.6 }, '-=0.35')
+        .from('.gsap-hero-cta', { opacity: 0, y: 16, duration: 0.5, stagger: 0.1 }, '-=0.35')
+        .from('.gsap-hero-note', { opacity: 0, duration: 0.4 }, '-=0.25')
+        .from(
+          '.gsap-hero-card',
+          { opacity: 0, scale: 0.94, duration: 0.9, ease: 'power3.out' },
+          '-=0.9',
+        )
+        .from(
+          '.gsap-hero-badge',
+          { opacity: 0, scale: 0.4, y: 12, duration: 0.55, ease: 'back.out(2.4)' },
+          '-=0.25',
+        )
+
+      // Generic scroll-reveal for section content further down the page.
+      gsap.utils.toArray<HTMLElement>('.gsap-reveal-section').forEach((section) => {
+        const targets = section.querySelectorAll('.gsap-reveal')
+        if (!targets.length) return
+        gsap.from(targets, {
+          opacity: 0,
+          y: 32,
+          duration: 0.65,
+          stagger: 0.08,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: section, start: 'top 78%' },
+        })
+      })
+
+      // Rank ladder: badges pop in one by one.
+      gsap.from('.gsap-rank-icon', {
+        opacity: 0,
+        scale: 0.3,
+        y: 14,
+        duration: 0.5,
+        stagger: 0.09,
+        ease: 'back.out(2.6)',
+        scrollTrigger: { trigger: '.gsap-rank-row', start: 'top 82%' },
+      })
+      gsap.from('.gsap-rank-arrow', {
+        opacity: 0,
+        duration: 0.3,
+        stagger: 0.09,
+        delay: 0.2,
+        scrollTrigger: { trigger: '.gsap-rank-row', start: 'top 82%' },
+      })
+
+      // Closing CTA: a slightly harder slam-in for the final punch.
+      gsap.from('.gsap-cta-heading', {
+        opacity: 0,
+        scale: 0.9,
+        duration: 0.6,
+        ease: 'power4.out',
+        scrollTrigger: { trigger: '.gsap-cta-heading', start: 'top 85%' },
+      })
+      gsap.from('.gsap-cta-button', {
+        opacity: 0,
+        y: 16,
+        duration: 0.5,
+        delay: 0.15,
+        ease: 'back.out(2)',
+        scrollTrigger: { trigger: '.gsap-cta-heading', start: 'top 85%' },
+      })
+
+      // Ambient flame flicker — subtle, continuous, never stops.
+      gsap.to('.gsap-flame', {
+        scale: 1.12,
+        rotate: -3,
+        duration: 0.55,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        transformOrigin: '50% 100%',
+        stagger: { each: 0.35, from: 'random' },
+      })
+    }, rootRef)
+
+    const handleLoad = () => ScrollTrigger.refresh()
+    window.addEventListener('load', handleLoad)
+
+    return () => {
+      window.removeEventListener('load', handleLoad)
+      ctx.revert()
+    }
+  }, [])
+
   return (
-    <div className="bg-ink text-cream">
+    <div ref={rootRef} className="bg-ink text-cream">
       <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
         <Link to="/">
           <Logo className="h-10" />
@@ -189,44 +289,48 @@ export default function Landing() {
 
       <main className="max-w-6xl mx-auto px-6 pt-10 pb-28 grid lg:grid-cols-2 gap-16 items-start">
         <div>
-          <div className="flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
+          <div className="gsap-eyebrow flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
             <span className="w-6 h-px bg-flame" />
             NOG GEEN KOOKBOEK? SNEU.
           </div>
           <h1 className="font-display text-6xl sm:text-7xl leading-[0.95] mb-6">
-            Kook je
-            <br />
-            eigen
-            <br />
-            <span className="text-flame">shit.</span>
+            <span className="block overflow-hidden">
+              <span className="gsap-hero-line block">Kook je</span>
+            </span>
+            <span className="block overflow-hidden">
+              <span className="gsap-hero-line block">eigen</span>
+            </span>
+            <span className="block overflow-hidden">
+              <span className="gsap-hero-line block text-flame">shit.</span>
+            </span>
           </h1>
-          <p className="text-cream/70 max-w-md mb-8">
+          <p className="gsap-hero-sub text-cream/70 max-w-md mb-8">
             Log elk gerecht dat je maakt — ingrediënten, stappen, en wat er misging. Wat je krijgt
             is geen app vol andermans recepten, maar jouw kookboek.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <Link
               to="/registreren"
-              className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-6 py-3 rounded-md text-center"
+              className="gsap-hero-cta bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-6 py-3 rounded-md text-center"
             >
               Maak een account
             </Link>
             <a
               href="#functies"
-              className="border border-line hover:border-cream/40 transition-colors px-6 py-3 rounded-md text-center font-semibold"
+              className="gsap-hero-cta border border-line hover:border-cream/40 transition-colors px-6 py-3 rounded-md text-center font-semibold"
             >
               Kijk eerst rond
             </a>
           </div>
-          <p className="text-xs text-cream/40">Gratis · Geen creditcard nodig</p>
+          <p className="gsap-hero-note text-xs text-cream/40">Gratis · Geen creditcard nodig</p>
         </div>
 
         <RecipePreviewCard />
       </main>
 
-      <section id="functies" className="border-t border-line">
+      <section id="functies" className="gsap-reveal-section border-t border-line">
         <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="max-w-xl mb-12">
+          <div className="gsap-reveal max-w-xl mb-12">
             <div className="flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
               <span className="w-6 h-px bg-flame" />
               MEER DAN EEN RECEPTENBOEK
@@ -237,8 +341,11 @@ export default function Landing() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {FEATURES.map((feature) => (
-              <div key={feature.title}>
-                <span className="text-3xl mb-3 inline-block" aria-hidden="true">
+              <div key={feature.title} className="gsap-reveal">
+                <span
+                  className={`text-3xl mb-3 inline-block${feature.icon === '🔥' ? ' gsap-flame' : ''}`}
+                  aria-hidden="true"
+                >
                   {feature.icon}
                 </span>
                 <h3 className="font-display text-xl mb-2">{feature.title}</h3>
@@ -249,9 +356,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-surface/40">
+      <section className="gsap-reveal-section border-t border-line bg-surface/40">
         <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="max-w-xl mb-10">
+          <div className="gsap-reveal max-w-xl mb-10">
             <div className="flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
               <span className="w-6 h-px bg-flame" />
               VAN RECRUIT TOT LEGENDE
@@ -260,31 +367,30 @@ export default function Landing() {
               Verdien je rang.
             </h2>
             <p className="text-cream/60 max-w-md">
-              Elk recept, elk moment, elke like op je werk telt mee. Hoe actiever je BBQ't, hoe
-              hoger je klimt.
+              Elk recept en elk moment telt mee. Hoe actiever je BBQ't, hoe hoger je klimt.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <div className="gsap-rank-row flex flex-wrap items-center gap-4 sm:gap-6">
             {RANKS.slice(0, 5).map((rank, i) => (
               <div key={rank.name} className="flex items-center gap-4 sm:gap-6">
-                <div className="flex flex-col items-center gap-2 w-20 text-center">
+                <div className="gsap-rank-icon flex flex-col items-center gap-2 w-20 text-center">
                   <span className="text-3xl" aria-hidden="true">
                     {rank.icon}
                   </span>
                   <p className="text-xs text-cream/60 leading-tight">{rank.name}</p>
                 </div>
-                {i < 4 && <span className="text-cream/20 text-xl">→</span>}
+                {i < 4 && <span className="gsap-rank-arrow text-cream/20 text-xl">→</span>}
               </div>
             ))}
-            <span className="text-cream/20 text-xl">→</span>
-            <p className="text-cream/40 text-sm">... tot BBQ General 🏆</p>
+            <span className="gsap-rank-arrow text-cream/20 text-xl">→</span>
+            <p className="gsap-rank-icon text-cream/40 text-sm">... tot BBQ General 🏆</p>
           </div>
         </div>
       </section>
 
-      <section id="zo-ziet-het-eruit" className="border-t border-line">
+      <section id="zo-ziet-het-eruit" className="gsap-reveal-section border-t border-line">
         <div className="max-w-6xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-16 items-center">
-          <div>
+          <div className="gsap-reveal">
             <div className="flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
               <span className="w-6 h-px bg-flame" />
               ZO ZIET HET ERUIT
@@ -297,20 +403,20 @@ export default function Landing() {
               vreemden, geen ruis — gewoon wat jouw collega chefs op het vuur hebben staan.
             </p>
           </div>
-          <div className="flex justify-center">
+          <div className="gsap-reveal flex justify-center">
             <MockFeedCard />
           </div>
         </div>
       </section>
 
-      <section className="bg-cream text-ink">
+      <section className="gsap-reveal-section bg-cream text-ink">
         <div className="max-w-6xl mx-auto px-6 py-20">
-          <h2 className="font-display text-3xl sm:text-4xl leading-[0.95] mb-12">
+          <h2 className="gsap-reveal font-display text-3xl sm:text-4xl leading-[0.95] mb-12">
             Hoe het werkt.
           </h2>
           <div className="grid md:grid-cols-3 gap-10">
             {STEPS.map((step) => (
-              <div key={step.n}>
+              <div key={step.n} className="gsap-reveal">
                 <p className="font-display text-3xl text-flame mb-3">{step.n}</p>
                 <h3 className="font-display text-xl mb-2">{step.title}</h3>
                 <p className="text-ink/70 text-sm leading-relaxed">{step.body}</p>
@@ -322,12 +428,12 @@ export default function Landing() {
 
       <section className="border-t border-line">
         <div className="max-w-6xl mx-auto px-6 py-20 text-center">
-          <h2 className="font-display text-4xl sm:text-5xl leading-[0.95] mb-6">
+          <h2 className="gsap-cta-heading font-display text-4xl sm:text-5xl leading-[0.95] mb-6">
             Tijd om je eigen shit te koken.
           </h2>
           <Link
             to="/registreren"
-            className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-8 py-3.5 rounded-md inline-block"
+            className="gsap-cta-button bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-8 py-3.5 rounded-md inline-block"
           >
             Begin je kookboek
           </Link>
