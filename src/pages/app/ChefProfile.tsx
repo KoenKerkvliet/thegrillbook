@@ -7,6 +7,7 @@ import { RankBadge } from '../../components/RankBadge'
 import { RankIcon } from '../../components/RankIcon'
 import { StreakBadge } from '../../components/StreakBadge'
 import { RecipeCard, type RecipeCardData } from '../../components/RecipeCard'
+import { OfficialBadge } from '../../components/OfficialBadge'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
@@ -121,7 +122,11 @@ export default function ChefProfile() {
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl truncate flex items-center gap-2">
             {profile.display_name || profile.username}
-            {points !== null && <RankIcon points={points} className="text-xl" />}
+            {profile.is_official ? (
+              <OfficialBadge />
+            ) : (
+              points !== null && <RankIcon points={points} className="text-xl" />
+            )}
           </h1>
           <p className="text-sm text-cream/50">@{profile.username}</p>
         </div>
@@ -132,7 +137,7 @@ export default function ChefProfile() {
         />
       </div>
 
-      {points !== null && (
+      {!profile.is_official && points !== null && (
         <div className="bg-surface border border-line rounded-md p-4 max-w-sm flex flex-col gap-3">
           <RankBadge points={points} showProgress />
           {streak !== null && (
@@ -146,7 +151,7 @@ export default function ChefProfile() {
 
       {profile.bio && <p className="text-cream/70 max-w-xl">{profile.bio}</p>}
 
-      {stats && (
+      {!profile.is_official && stats && (
         <div className="grid grid-cols-4 gap-2 max-w-xl">
           {[
             ['Recepten', stats.recipes],

@@ -276,6 +276,7 @@ export type Database = {
           display_name: string | null
           favorite_techniques: string[]
           id: string
+          is_official: boolean
           specialties: string[]
           username: string
         }
@@ -287,6 +288,7 @@ export type Database = {
           display_name?: string | null
           favorite_techniques?: string[]
           id: string
+          is_official?: boolean
           specialties?: string[]
           username: string
         }
@@ -298,6 +300,7 @@ export type Database = {
           display_name?: string | null
           favorite_techniques?: string[]
           id?: string
+          is_official?: boolean
           specialties?: string[]
           username?: string
         }

@@ -6,6 +6,7 @@ import { FollowButton } from '../../components/FollowButton'
 import { RankIcon } from '../../components/RankIcon'
 import { isDiscoverableChef } from '../../lib/admin'
 import type { Tables } from '../../types/database'
+import { OfficialBadge } from '../../components/OfficialBadge'
 
 type Profile = Tables<'profiles'>
 
@@ -32,7 +33,10 @@ function ProfileRow({
         </div>
         <div className="min-w-0">
           <p className="font-semibold truncate flex items-center gap-1.5">
-            {profile.display_name || profile.username}
+            <span className="flex items-center gap-1.5">
+              {profile.display_name || profile.username}
+              {profile.is_official && <OfficialBadge compact />}
+            </span>
             <RankIcon points={points} />
           </p>
           <p className="text-sm text-cream/50 truncate">@{profile.username}</p>
