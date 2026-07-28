@@ -71,6 +71,8 @@ export default function Profile() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const deleteConfirmation = profile ? `@${profile.username}` : ''
+  const deleteConfirmed = deleteConfirmText.trim() === deleteConfirmation
 
   useEffect(() => {
     if (!user) return
@@ -170,7 +172,7 @@ export default function Profile() {
 
   async function handleDeleteAccount(e: FormEvent) {
     e.preventDefault()
-    if (!profile || deleteConfirmText !== profile.username) return
+    if (!profile || !deleteConfirmed) return
     setDeleting(true)
     setDeleteError(null)
     const { data, error } = await supabase.functions.invoke('delete-own-account')
@@ -363,12 +365,15 @@ export default function Profile() {
             id="deleteConfirm"
             value={deleteConfirmText}
             onChange={(e) => setDeleteConfirmText(e.target.value)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
           />
           {deleteError && <p className="text-sm text-flame">{deleteError}</p>}
           <button
             type="submit"
-            disabled={deleting || !profile || deleteConfirmText !== profile.username}
+            disabled={deleting || !deleteConfirmed}
             className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md px-5 py-2.5 text-sm disabled:opacity-50 self-start"
           >
             {deleting ? 'Bezig...' : 'Verwijder mijn account'}
