@@ -64,7 +64,7 @@ const SHOWCASE_RECIPES = [
   {
     title: 'Sticky Cola-Bourbon Spareribs',
     chef: 'Bram de Vries',
-    image: 'images/demo-recipes/sticky-cola-bourbon-spareribs.png',
+    image: 'images/demo-recipes/sticky-cola-bourbon-spareribs.webp',
     time: '4 uur 30',
     rating: 5,
     tag: 'Low & slow',
@@ -72,7 +72,7 @@ const SHOWCASE_RECIPES = [
   {
     title: 'Zalm op Cederhout',
     chef: 'Noor El Amrani',
-    image: 'images/demo-recipes/zalm-cederhout.png',
+    image: 'images/demo-recipes/zalm-cederhout.webp',
     time: '45 min',
     rating: 5,
     tag: 'Vis',
@@ -80,7 +80,7 @@ const SHOWCASE_RECIPES = [
   {
     title: 'Reverse-Seared Tomahawk',
     chef: 'Daan Vermeer',
-    image: 'images/demo-recipes/reverse-seared-tomahawk.png',
+    image: 'images/demo-recipes/reverse-seared-tomahawk.webp',
     time: '1 uur 50',
     rating: 5,
     tag: 'Vlees',
@@ -93,21 +93,21 @@ const CHEFS = [
     name: 'Bram de Vries',
     handle: '@bram_de_vries',
     bio: 'Klassieke Amerikaanse barbecue, stevige smaken en koken op echt vuur.',
-    recipes: ['sticky-cola-bourbon-spareribs.png', 'jalapeno-smashburgers.png'],
+    recipes: ['sticky-cola-bourbon-spareribs.webp', 'jalapeno-smashburgers.webp'],
   },
   {
     initials: 'NE',
     name: 'Noor El Amrani',
     handle: '@noor_el_amrani',
     bio: 'Mediterrane smaken, verse ingrediënten en precies genoeg rook.',
-    recipes: ['zalm-cederhout.png', 'gegrilde-perzik-burrata.png'],
+    recipes: ['zalm-cederhout.webp', 'gegrilde-perzik-burrata.webp'],
   },
   {
     initials: 'DV',
     name: 'Daan Vermeer',
     handle: '@daan_vermeer',
     bio: 'Low & slow, goed vlees en lange avonden rond de barbecue.',
-    recipes: ['beef-short-ribs.png', 'gerookte-mac-cheese.png'],
+    recipes: ['beef-short-ribs.webp', 'gerookte-mac-cheese.webp'],
   },
 ]
 
@@ -180,7 +180,7 @@ function MockFeedCard() {
 
       <div className="aspect-video overflow-hidden">
         <img
-          src={`${import.meta.env.BASE_URL}images/demo-recipes/zalm-cederhout.png`}
+          src={`${import.meta.env.BASE_URL}images/demo-recipes/zalm-cederhout.webp`}
           alt="Zalm op cederhout met citroen en dille"
           className="w-full h-full object-cover"
         />
@@ -244,6 +244,7 @@ function BackToTop() {
 
 export default function Landing() {
   const rootRef = useRef<HTMLDivElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -354,7 +355,7 @@ export default function Landing() {
             Zo ziet het eruit
           </a>
         </nav>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <Link to="/login" className="text-sm text-cream/80 hover:text-cream">
             Inloggen
           </Link>
@@ -362,10 +363,58 @@ export default function Landing() {
             to="/registreren"
             className="bg-flame hover:bg-flame-dark transition-colors text-ink text-sm font-semibold px-4 py-2 rounded-md"
           >
-            Begin je kookboek
+            Start je gratis grillboek
           </Link>
         </div>
+        <button
+          type="button"
+          className="md:hidden w-11 h-11 rounded-md border border-line flex flex-col items-center justify-center gap-1.5"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
+          aria-label={menuOpen ? 'Menu sluiten' : 'Menu openen'}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span
+            className={`w-5 h-0.5 bg-cream transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
+          />
+          <span className={`w-5 h-0.5 bg-cream transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
+          <span
+            className={`w-5 h-0.5 bg-cream transition-transform ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
+          />
+        </button>
       </header>
+      <div
+        id="mobile-menu"
+        className={`md:hidden overflow-hidden border-b border-line bg-surface transition-all duration-300 ${
+          menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 border-b-transparent'
+        }`}
+      >
+        <nav className="px-6 py-5 flex flex-col gap-1">
+          {[
+            ['Recepten', '#recepten'],
+            ['Functies', '#functies'],
+            ['Zo ziet het eruit', '#zo-ziet-het-eruit'],
+          ].map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              className="py-3 text-cream/75 hover:text-cream border-b border-line"
+            >
+              {label}
+            </a>
+          ))}
+          <Link to="/login" className="py-3 text-cream/75">
+            Inloggen
+          </Link>
+          <Link
+            to="/registreren"
+            className="mt-2 bg-flame text-ink font-semibold px-5 py-3 rounded-md text-center"
+          >
+            Start je gratis grillboek
+          </Link>
+        </nav>
+      </div>
 
       <main className="max-w-6xl mx-auto px-6 pt-10 pb-28 grid lg:grid-cols-2 gap-16 items-start">
         <div>
@@ -393,7 +442,7 @@ export default function Landing() {
               to="/registreren"
               className="gsap-hero-cta bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-6 py-3 rounded-md text-center"
             >
-              Maak een account
+              Start je gratis grillboek
             </Link>
             <a
               href="#recepten"
@@ -428,7 +477,7 @@ export default function Landing() {
               to="/registreren"
               className="gsap-reveal text-sm font-semibold text-flame hover:text-cream transition-colors"
             >
-              Bewaar je eerste recept →
+              Start je gratis grillboek →
             </Link>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -596,7 +645,7 @@ export default function Landing() {
             to="/registreren"
             className="gsap-cta-button bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-8 py-3.5 rounded-md inline-block"
           >
-            Maak gratis je grillboek
+            Start je gratis grillboek
           </Link>
         </div>
       </section>
