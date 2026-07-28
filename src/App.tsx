@@ -20,6 +20,7 @@ import Chefs from './pages/app/Chefs'
 import ChefProfile from './pages/app/ChefProfile'
 import Profile from './pages/app/Profile'
 import Admin from './pages/app/Admin'
+import Leaderboard from './pages/app/Leaderboard'
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
             <Route path="video/nieuw" element={<VideoForm />} />
             <Route path="chefs" element={<Chefs />} />
             <Route path="chefs/:username" element={<ChefProfile />} />
+            <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="profiel" element={<Profile />} />
             <Route path="admin" element={<Admin />} />
           </Route>

@@ -171,7 +171,12 @@ export default function Feed() {
       const recipeSelect =
         'id, title, description, cover_photo_url, cook_time_minutes, servings, rating, created_at, owner_id, profiles!recipes_owner_id_fkey(username, display_name, avatar_url)'
       const recipeQueries = [
-        supabase.from('recipes').select(recipeSelect).eq('owner_id', user!.id).order('created_at', { ascending: false }),
+        supabase
+          .from('recipes')
+          .select(recipeSelect)
+          .eq('owner_id', user!.id)
+          .is('forked_from_recipe_id', null)
+          .order('created_at', { ascending: false }),
       ]
       if (followingIds.length > 0) {
         recipeQueries.push(

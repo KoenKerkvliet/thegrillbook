@@ -647,6 +647,19 @@ export type Database = {
         }[]
       }
       get_chef_streak: { Args: { target_user_id: string }; Returns: number }
+      get_monthly_following_leaderboard: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string | null
+          display_name: string | null
+          moments_logged: number
+          monthly_points: number
+          recipes_logged: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

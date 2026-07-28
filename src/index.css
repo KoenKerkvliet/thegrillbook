@@ -44,14 +44,23 @@ button:not(:disabled) {
 /* Print: app chrome never prints, and printable content forces black-on-white
    regardless of the dark theme's explicit text colors (print:hidden alone
    only handles visibility, not the cream-on-dark palette). */
+@page {
+  margin: 15mm;
+}
+
 @media print {
   header,
-  aside {
+  aside,
+  nav {
     display: none !important;
   }
 
   body {
     background: #fff;
+  }
+
+  .print-content {
+    max-width: none !important;
   }
 
   .print-content,
@@ -62,5 +71,16 @@ button:not(:disabled) {
 
   .print-content a {
     color: #000 !important;
+  }
+
+  .print-content h1,
+  .print-content h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .print-content li {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

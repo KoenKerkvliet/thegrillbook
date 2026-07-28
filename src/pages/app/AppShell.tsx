@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { to: '/app', label: 'Feed', end: true },
   { to: '/app/kookboek', label: 'Mijn kookboek', end: false },
   { to: '/app/chefs', label: 'Collega chefs', end: false },
+  { to: '/app/leaderboard', label: 'Leaderboard', end: false },
   { to: '/app/profiel', label: 'Profiel', end: false },
 ]
 
@@ -36,6 +37,9 @@ function MobileNavIcon({ name }: { name: string }) {
   }
   if (name === 'Collega chefs') {
     return <svg {...common}><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.5-3.2 2.3-5 5.5-5s5 1.8 5.5 5M16 6.5a3 3 0 0 1 0 5.8M16.5 14c2.5.4 3.8 2 4 4.5" /></svg>
+  }
+  if (name === 'Leaderboard') {
+    return <svg {...common}><path d="M8 21h8M12 17v4M7 4h10v3a5 5 0 0 1-10 0z" /><path d="M7 6H4v1a4 4 0 0 0 4 4M17 6h3v1a4 4 0 0 1-4 4" /></svg>
   }
   return <svg {...common}><circle cx="12" cy="8" r="3.5" /><path d="M5 21c.6-4.2 2.9-6.5 7-6.5s6.4 2.3 7 6.5" /></svg>
 }
@@ -72,7 +76,7 @@ function MobileBottomNav() {
       className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur-md"
       aria-label="Hoofdnavigatie"
     >
-      <div className="grid grid-cols-4 px-2 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
+      <div className="grid grid-cols-5 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
         {NAV_LINKS.map((link) => (
           <NavLink
             key={link.to}
@@ -88,7 +92,13 @@ function MobileBottomNav() {
               <>
                 {isActive && <span className="absolute top-0 w-8 h-0.5 rounded-full bg-flame" />}
                 <MobileNavIcon name={link.label} />
-                <span>{link.label === 'Mijn kookboek' ? 'Kookboek' : link.label}</span>
+                <span>
+                  {link.label === 'Mijn kookboek'
+                    ? 'Kookboek'
+                    : link.label === 'Leaderboard'
+                      ? 'Ranking'
+                      : link.label}
+                </span>
               </>
             )}
           </NavLink>
