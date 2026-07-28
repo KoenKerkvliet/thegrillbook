@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth/useAuth'
 import { Logo } from '../../components/Logo'
 import { supabase } from '../../lib/supabaseClient'
@@ -228,6 +228,7 @@ function NewMenu() {
 
 function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const { profile } = useAuth()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const ref = useClickOutside<HTMLDivElement>(() => setOpen(false))
 
@@ -260,6 +261,13 @@ function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
           >
             BBQHeros delen
+          </NavLink>
+          <NavLink
+            to={`/app/feedback?from=${encodeURIComponent(location.pathname + location.search)}`}
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
+          >
+            Feedback & ideeën
           </NavLink>
           <button
             type="button"

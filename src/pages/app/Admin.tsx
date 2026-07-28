@@ -22,6 +22,138 @@ type AdminUser = {
 type Tab = 'active' | 'archived'
 type UserFilter = 'all' | 'recent' | 'inactive' | 'never' | 'with_content' | 'without_content'
 type UserSort = 'newest' | 'last_active' | 'points' | 'content' | 'name'
+type FeedbackStatus = 'new' | 'reviewed' | 'planned' | 'completed' | 'not_now'
+
+type FeedbackItem = {
+  id: string
+  type: 'idea' | 'bug' | 'question'
+  subject: string
+  details: string | null
+  page_url: string | null
+  status: FeedbackStatus
+  created_at: string
+  email_notified_at: string | null
+  profiles: { username: string; display_name: string | null } | null
+}
+
+const feedbackStatusLabels: Record<FeedbackStatus, string> = {
+  new: 'Nieuw',
+  reviewed: 'Bekeken',
+  planned: 'Gepland',
+  completed: 'Afgerond',
+  not_now: 'Niet gepland',
+}
+
+const feedbackTypeLabels = {
+  idea: 'Idee',
+  bug: 'Probleem',
+  question: 'Vraag',
+} as const
+
+function AdminFeedback() {
+  const [items, setItems] = useState<FeedbackItem[] | null>(null)
+  const [filter, setFilter] = useState<'all' | FeedbackStatus>('all')
+  const [busyId, setBusyId] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase
+      .from('feedback_submissions')
+      .select('id, type, subject, details, page_url, status, created_at, email_notified_at, profiles(username, display_name)')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setItems((data ?? []) as unknown as FeedbackItem[]))
+  }, [])
+
+  async function updateStatus(id: string, status: FeedbackStatus) {
+    setBusyId(id)
+    const { error } = await supabase
+      .from('feedback_submissions')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+    if (!error) {
+      setItems((current) => current?.map((item) => item.id === id ? { ...item, status } : item) ?? [])
+    }
+    setBusyId(null)
+  }
+
+  const visible = (items ?? []).filter((item) => filter === 'all' || item.status === filter)
+  const newCount = (items ?? []).filter((item) => item.status === 'new').length
+
+  return (
+    <section className="border border-line rounded-md bg-surface overflow-hidden">
+      <div className="p-5 border-b border-line flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1">
+          <h2 className="font-display text-2xl">Feedback & ideeën</h2>
+          <p className="text-sm text-cream/50 mt-1">
+            {items === null ? 'Inzendingen laden...' : `${newCount} ${newCount === 1 ? 'nieuw bericht' : 'nieuwe berichten'}`}
+          </p>
+        </div>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as 'all' | FeedbackStatus)}
+          className="rounded-md bg-surface-2 border border-line px-3 py-2 text-sm outline-none focus:border-flame"
+        >
+          <option value="all">Alle statussen</option>
+          {Object.entries(feedbackStatusLabels).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </div>
+
+      {items !== null && visible.length === 0 && (
+        <p className="p-5 text-sm text-cream/50">Nog geen inzendingen in deze selectie.</p>
+      )}
+
+      <div className="divide-y divide-line">
+        {visible.map((item) => {
+          const name = item.profiles?.display_name || item.profiles?.username || 'Onbekende gebruiker'
+          return (
+            <article key={item.id} className="p-5">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-flame">
+                      {feedbackTypeLabels[item.type]}
+                    </span>
+                    <span className="text-xs text-cream/35">{relativeTime(item.created_at)}</span>
+                    {!item.email_notified_at && (
+                      <span className="text-[10px] rounded-full border border-flame/40 px-2 py-0.5 text-flame">
+                        E-mail niet bevestigd
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-semibold">{item.subject}</h3>
+                  {item.details && <p className="text-sm text-cream/65 whitespace-pre-wrap mt-2">{item.details}</p>}
+                  <p className="text-xs text-cream/35 mt-3">
+                    Van {name}{item.profiles?.username ? ` · @${item.profiles.username}` : ''}
+                  </p>
+                  {item.page_url && (
+                    <a
+                      href={item.page_url}
+                      className="inline-block text-xs text-flame hover:underline mt-1 break-all"
+                    >
+                      Pagina bekijken
+                    </a>
+                  )}
+                </div>
+                <select
+                  value={item.status}
+                  disabled={busyId === item.id}
+                  onChange={(e) => updateStatus(item.id, e.target.value as FeedbackStatus)}
+                  className="shrink-0 rounded-md bg-surface-2 border border-line px-3 py-2 text-sm outline-none focus:border-flame disabled:opacity-50"
+                  aria-label={`Status van ${item.subject}`}
+                >
+                  {Object.entries(feedbackStatusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
 
 type UserActionsProps = {
   target: AdminUser
@@ -379,6 +511,8 @@ export default function Admin() {
           ))}
         </div>
       )}
+
+      <AdminFeedback />
 
       <div className="flex items-center gap-2 border-b border-line">
         {(

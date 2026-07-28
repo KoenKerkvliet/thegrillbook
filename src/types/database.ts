@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      feedback_submissions: {
+        Row: {
+          created_at: string
+          details: string | null
+          email_notified_at: string | null
+          id: string
+          page_url: string | null
+          status: string
+          subject: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          email_notified_at?: string | null
+          id?: string
+          page_url?: string | null
+          status?: string
+          subject: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          email_notified_at?: string | null
+          id?: string
+          page_url?: string | null
+          status?: string
+          subject?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       editorial_post_dismissals: {
         Row: {
           dismissed_at: string
