@@ -8,28 +8,32 @@ export default function VideoForm() {
   const { user } = useAuth()
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [caption, setCaption] = useState('')
-  const [isRecipe, setIsRecipe] = useState(false)
+  const [saveToTutorials, setSaveToTutorials] = useState(false)
+  const [shareInFeed, setShareInFeed] = useState(true)
+  const [tutorialCategory, setTutorialCategory] = useState('onderhoud')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!user) return
+    if (!user || (!saveToTutorials && !shareInFeed)) return
     if (!extractYoutubeId(youtubeUrl.trim())) {
       setError('Dit lijkt geen geldige YouTube-link. Kopieer de link rechtstreeks uit YouTube.')
       return
     }
     setError(null)
     setSaving(true)
-    const { error } = await supabase.from('videos').insert({
+    const { error: saveError } = await supabase.from('videos').insert({
       owner_id: user.id,
       youtube_url: youtubeUrl.trim(),
       caption: caption.trim() || null,
-      is_recipe: isRecipe,
+      is_recipe: saveToTutorials,
+      tutorial_category: saveToTutorials ? tutorialCategory : null,
+      is_feed_visible: shareInFeed,
     })
     setSaving(false)
-    if (error) {
+    if (saveError) {
       setError('Opslaan mislukt.')
       return
     }
@@ -39,10 +43,13 @@ export default function VideoForm() {
   if (done) {
     return (
       <div className="max-w-md text-center py-10">
-        <p className="font-display text-3xl mb-4">📺 Gedeeld!</p>
+        <p className="font-display text-3xl mb-4">Video opgeslagen!</p>
         <p className="text-cream/70 mb-6">
-          Je video staat in de feed
-          {isRecipe ? ' en op het Tutorials-tabblad in je kookboek.' : '.'}
+          {shareInFeed && saveToTutorials
+            ? 'Je video staat in de feed en is bewaard bij Tutorials.'
+            : shareInFeed
+              ? 'Je video staat in de feed.'
+              : 'Je video is bewaard bij Tutorials en blijft daar makkelijk terug te vinden.'}
         </p>
         <div className="flex gap-3 justify-center">
           <button
@@ -51,17 +58,19 @@ export default function VideoForm() {
               setDone(false)
               setYoutubeUrl('')
               setCaption('')
-              setIsRecipe(false)
+              setSaveToTutorials(false)
+              setShareInFeed(true)
+              setTutorialCategory('onderhoud')
             }}
             className="border border-line hover:border-cream/40 transition-colors px-5 py-2.5 rounded-md font-semibold"
           >
             Nog een video
           </button>
           <Link
-            to="/app"
+            to={saveToTutorials && !shareInFeed ? '/app/kookboek?tab=tutorials' : '/app'}
             className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-5 py-2.5 rounded-md"
           >
-            Naar de feed
+            {saveToTutorials && !shareInFeed ? 'Naar mijn kookboek' : 'Naar de feed'}
           </Link>
         </div>
       </div>
@@ -71,10 +80,10 @@ export default function VideoForm() {
   return (
     <form onSubmit={handleSubmit} className="max-w-md flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-3xl mb-2">Video delen</h1>
+        <h1 className="font-display text-3xl mb-2">Video toevoegen</h1>
         <p className="text-cream/60 text-sm">
-          Zag je een goede BBQ-tutorial, review of gewoon iets leuks op YouTube? Deel 'm met je
-          collega chefs.
+          Bewaar belangrijke uitleg in je eigen naslagwerk, deel een leuke video met je collega
+          chefs, of doe allebei.
         </p>
       </div>
 
@@ -95,7 +104,7 @@ export default function VideoForm() {
 
       <div>
         <label className="block text-sm text-cream/60 mb-1" htmlFor="caption">
-          Tekstje (optioneel)
+          Titel of notitie (optioneel)
         </label>
         <textarea
           id="caption"
@@ -103,31 +112,68 @@ export default function VideoForm() {
           onChange={(e) => setCaption(e.target.value)}
           rows={2}
           maxLength={280}
-          placeholder="Deze brisket-techniek moet ik proberen"
+          placeholder="Zo maak je de kamado grondig schoon"
           className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
         />
       </div>
 
-      <label className="flex items-start gap-2.5 text-sm text-cream/80 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isRecipe}
-          onChange={(e) => setIsRecipe(e.target.checked)}
-          className="mt-0.5"
-        />
-        <span>
-          Dit is ook een recept — zet 'm ook op het Tutorials-tabblad in mijn kookboek
-        </span>
-      </label>
+      <div className="bg-surface border border-line rounded-md p-4 flex flex-col gap-4">
+        <p className="text-xs font-semibold tracking-widest text-cream/50 uppercase">
+          Waar wil je deze video plaatsen?
+        </p>
+        <label className="flex items-start gap-2.5 text-sm text-cream/80 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={saveToTutorials}
+            onChange={(e) => setSaveToTutorials(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Bewaar bij Tutorials
+            <span className="block text-cream/45">Voor blijvende uitleg en onderhoud.</span>
+          </span>
+        </label>
+        {saveToTutorials && (
+          <label className="block text-sm text-cream/60">
+            Categorie
+            <select
+              value={tutorialCategory}
+              onChange={(e) => setTutorialCategory(e.target.value)}
+              className="mt-1 w-full rounded-md bg-surface-2 border border-line px-3 py-2 outline-none focus:border-flame text-cream"
+            >
+              <option value="onderhoud">Onderhoud</option>
+              <option value="techniek">Techniek</option>
+              <option value="bereiding">Bereiding</option>
+              <option value="materiaal">Materiaal</option>
+              <option value="overig">Overig</option>
+            </select>
+          </label>
+        )}
+        <label className="flex items-start gap-2.5 text-sm text-cream/80 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={shareInFeed}
+            onChange={(e) => setShareInFeed(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Deel in de feed
+            <span className="block text-cream/45">Zichtbaar voor chefs die je volgen.</span>
+          </span>
+        </label>
+      </div>
 
+      {!saveToTutorials && !shareInFeed && (
+        <p className="text-sm text-flame">Kies minimaal één plek voor deze video.</p>
+      )}
       {error && <p className="text-sm text-flame">{error}</p>}
 
       <button
         type="submit"
-        disabled={saving || !youtubeUrl.trim()}
+        disabled={saving || !youtubeUrl.trim() || (!saveToTutorials && !shareInFeed)}
         className="bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold rounded-md py-2.5 disabled:opacity-50"
       >
-        {saving ? 'Bezig...' : 'Delen'}
+        {saving ? 'Bezig...' : 'Video opslaan'}
       </button>
     </form>
   )

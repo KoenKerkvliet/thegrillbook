@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { RecipeCard, type RecipeCardData } from '../../components/RecipeCard'
@@ -17,6 +17,15 @@ type Tutorial = {
   id: string
   youtube_url: string
   caption: string | null
+  tutorial_category: string | null
+}
+
+const TUTORIAL_CATEGORIES: Record<string, string> = {
+  onderhoud: 'Onderhoud',
+  techniek: 'Techniek',
+  bereiding: 'Bereiding',
+  materiaal: 'Materiaal',
+  overig: 'Overig',
 }
 
 type LogbookEntry = Tables<'logbook_entries'>
@@ -38,6 +47,9 @@ function TutorialCard({ video }: { video: Tutorial }) {
         )}
       </div>
       <div className="p-3">
+        <span className="inline-block mb-2 text-[10px] font-semibold tracking-widest uppercase text-flame">
+          {TUTORIAL_CATEGORIES[video.tutorial_category ?? 'overig'] ?? 'Overig'}
+        </span>
         <p className="text-sm text-cream/80 leading-snug line-clamp-2">
           {video.caption || 'Bekijk op YouTube'}
         </p>
@@ -188,12 +200,14 @@ const SORT_LABELS: Record<SortOption, string> = {
 
 export default function Kookboek() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [tab, setTab] = useState<'recepten' | 'ontdekken' | 'tutorials' | 'aantekeningen'>(
-    'recepten',
+    searchParams.get('tab') === 'tutorials' ? 'tutorials' : 'recepten',
   )
   const [recipes, setRecipes] = useState<RecipeCardData[] | null>(null)
   const [discoveryRecipes, setDiscoveryRecipes] = useState<RecipeCardData[] | null>(null)
   const [tutorials, setTutorials] = useState<Tutorial[] | null>(null)
+  const [tutorialCategory, setTutorialCategory] = useState('')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortOption>('nieuwste')
   const [ingredientFilter, setIngredientFilter] = useState('')
@@ -254,7 +268,7 @@ export default function Kookboek() {
 
     supabase
       .from('videos')
-      .select('id, youtube_url, caption')
+      .select('id, youtube_url, caption, tutorial_category')
       .eq('owner_id', user.id)
       .eq('is_recipe', true)
       .order('created_at', { ascending: false })
@@ -457,16 +471,51 @@ export default function Kookboek() {
           {tutorials === null && <p className="text-cream/50">Laden...</p>}
           {tutorials?.length === 0 && (
             <p className="text-cream/60">
-              Nog geen tutorials bewaard. Deel een YouTube-video en vink "Dit is ook een recept"
-              aan om 'm hier terug te vinden.
+              Nog geen tutorials bewaard. Voeg een YouTube-video toe en kies “Bewaar bij
+              Tutorials” om hem hier blijvend terug te vinden.
             </p>
           )}
           {tutorials && tutorials.length > 0 && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {tutorials.map((video) => (
-                <TutorialCard key={video.id} video={video} />
-              ))}
-            </div>
+            <>
+              <div className="flex flex-wrap gap-2 mb-5">
+                <button
+                  type="button"
+                  onClick={() => setTutorialCategory('')}
+                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                    tutorialCategory === ''
+                      ? 'border-flame text-flame'
+                      : 'border-line text-cream/60'
+                  }`}
+                >
+                  Alles
+                </button>
+                {Object.entries(TUTORIAL_CATEGORIES).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setTutorialCategory(value)}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                      tutorialCategory === value
+                        ? 'border-flame text-flame'
+                        : 'border-line text-cream/60'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {tutorials
+                  .filter(
+                    (video) =>
+                      !tutorialCategory ||
+                      (video.tutorial_category ?? 'overig') === tutorialCategory,
+                  )
+                  .map((video) => (
+                    <TutorialCard key={video.id} video={video} />
+                  ))}
+              </div>
+            </>
           )}
         </>
       )}

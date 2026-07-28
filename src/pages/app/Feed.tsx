@@ -11,6 +11,8 @@ import { StreakBadge } from '../../components/StreakBadge'
 import { isDiscoverableChef } from '../../lib/admin'
 import type { Tables } from '../../types/database'
 
+const FEED_PAGE_SIZE = 15
+
 type Profile = Tables<'profiles'>
 
 type Stats = {
@@ -122,6 +124,7 @@ export default function Feed() {
   const [followingCount, setFollowingCount] = useState<number | null>(null)
   const [suggested, setSuggested] = useState<Profile[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     if (!user) return
@@ -209,6 +212,7 @@ export default function Feed() {
           'id, youtube_url, caption, is_recipe, created_at, owner_id, profiles!videos_owner_id_fkey(username, display_name, avatar_url)',
         )
         .in('owner_id', momentOwnerIds)
+        .eq('is_feed_visible', true)
         .order('created_at', { ascending: false })
       videoRows = videoData ?? []
 
@@ -381,6 +385,13 @@ export default function Feed() {
     return <p className="text-cream/50">Feed laden...</p>
   }
 
+  const pageCount = Math.max(1, Math.ceil(items.length / FEED_PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const visibleItems = items.slice(
+    (currentPage - 1) * FEED_PAGE_SIZE,
+    currentPage * FEED_PAGE_SIZE,
+  )
+
   const feedColumn =
     items.length === 0 ? (
       followingCount === 0 ? (
@@ -404,7 +415,7 @@ export default function Feed() {
       )
     ) : (
       <div className="flex flex-col gap-6">
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           if (item.kind === 'recipe') {
             return (
               <FeedRecipeCard
@@ -433,6 +444,38 @@ export default function Feed() {
             />
           )
         })}
+        {pageCount > 1 && (
+          <nav
+            className="flex items-center justify-between border-t border-line pt-5"
+            aria-label="Feedpagina's"
+          >
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => {
+                setPage((value) => Math.max(1, value - 1))
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="border border-line rounded-md px-4 py-2 text-sm font-semibold hover:border-cream/40 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              ← Vorige
+            </button>
+            <span className="text-sm text-cream/50">
+              Pagina {currentPage} van {pageCount}
+            </span>
+            <button
+              type="button"
+              disabled={currentPage === pageCount}
+              onClick={() => {
+                setPage((value) => Math.min(pageCount, value + 1))
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="border border-line rounded-md px-4 py-2 text-sm font-semibold hover:border-cream/40 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Volgende →
+            </button>
+          </nav>
+        )}
       </div>
     )
 

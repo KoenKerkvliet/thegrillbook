@@ -590,24 +590,30 @@ export type Database = {
           caption: string | null
           created_at: string
           id: string
+          is_feed_visible: boolean
           is_recipe: boolean
           owner_id: string
+          tutorial_category: string | null
           youtube_url: string
         }
         Insert: {
           caption?: string | null
           created_at?: string
           id?: string
+          is_feed_visible?: boolean
           is_recipe?: boolean
           owner_id: string
+          tutorial_category?: string | null
           youtube_url: string
         }
         Update: {
           caption?: string | null
           created_at?: string
           id?: string
+          is_feed_visible?: boolean
           is_recipe?: boolean
           owner_id?: string
+          tutorial_category?: string | null
           youtube_url?: string
         }
         Relationships: [
