@@ -25,6 +25,7 @@ function UserRow({
   target,
   tab,
   busy,
+  isCurrentUser,
   onArchive,
   onRestore,
   onDelete,
@@ -33,13 +34,14 @@ function UserRow({
   target: AdminUser
   tab: Tab
   busy: boolean
+  isCurrentUser: boolean
   onArchive: (target: AdminUser) => void
   onRestore: (target: AdminUser) => void
   onDelete: (target: AdminUser) => void
   onResetPassword: (target: AdminUser) => void
 }) {
   return (
-    <tr className="border-b border-line/50">
+    <tr className={`border-b border-line/50 ${isCurrentUser ? 'bg-surface/40 text-cream/60' : ''}`}>
       <td className="py-3 pr-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
@@ -50,7 +52,14 @@ function UserRow({
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate">{target.displayName || target.username || '—'}</p>
+            <div className="flex items-center gap-2">
+              <p className="truncate">{target.displayName || target.username || '—'}</p>
+              {isCurrentUser && (
+                <span className="rounded-full border border-line px-2 py-0.5 text-[10px] uppercase tracking-wide text-cream/40">
+                  Jij
+                </span>
+              )}
+            </div>
             {target.username && <p className="text-xs text-cream/40">@{target.username}</p>}
           </div>
         </div>
@@ -61,7 +70,9 @@ function UserRow({
       <td className="py-3 pr-4 text-right">{target.recipeCount}</td>
       <td className="py-3 pr-4 text-right">{target.momentCount}</td>
       <td className="py-3 pl-4 text-right whitespace-nowrap">
-        {tab === 'active' ? (
+        {isCurrentUser ? (
+          <span className="text-xs text-cream/30">Jouw account</span>
+        ) : tab === 'active' ? (
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"
@@ -294,6 +305,7 @@ export default function Admin() {
                   target={u}
                   tab={tab}
                   busy={busyId === u.id}
+                  isCurrentUser={u.id === user?.id}
                   onArchive={handleArchive}
                   onRestore={handleRestore}
                   onDelete={handleDelete}
