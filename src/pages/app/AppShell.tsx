@@ -136,6 +136,21 @@ function WeekWidget() {
   )
 }
 
+function LeaderboardWidget() {
+  return (
+    <NavLink
+      to="/app/leaderboard"
+      className="hidden md:block border border-line hover:border-flame/40 bg-surface rounded-md p-4 mt-4 transition-colors group"
+    >
+      <p className="font-display text-sm tracking-wide text-cream group-hover:text-flame transition-colors">
+        MAANDRANGLIJST
+      </p>
+      <p className="text-xs mt-1 text-cream/50">Bekijk jouw positie tussen de chefs die je volgt.</p>
+      <span className="inline-block text-xs font-semibold text-flame mt-3">Bekijk leaderboard →</span>
+    </NavLink>
+  )
+}
+
 function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
   const ref = useRef<T>(null)
   useEffect(() => {
@@ -285,6 +300,7 @@ export default function AppShell() {
         <aside className="hidden md:block md:w-52 shrink-0">
           <SidebarNav />
           <WeekWidget />
+          <LeaderboardWidget />
         </aside>
 
         <main className="flex-1 min-w-0">

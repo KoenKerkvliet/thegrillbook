@@ -303,17 +303,6 @@ export default function Kookboek() {
       <div className="flex gap-1 border-b border-line mb-6">
         <button
           type="button"
-          onClick={() => setTab('ontdekken')}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-            tab === 'ontdekken'
-              ? 'border-flame text-cream'
-              : 'border-transparent text-cream/50 hover:text-cream'
-          }`}
-        >
-          Ontdekken {discoveryRecipes && `(${discoveryRecipes.length})`}
-        </button>
-        <button
-          type="button"
           onClick={() => setTab('recepten')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
             tab === 'recepten'
@@ -322,6 +311,17 @@ export default function Kookboek() {
           }`}
         >
           Recepten {recipes && `(${recipes.length})`}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('ontdekken')}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            tab === 'ontdekken'
+              ? 'border-flame text-cream'
+              : 'border-transparent text-cream/50 hover:text-cream'
+          }`}
+        >
+          Ontdekken {discoveryRecipes && `(${discoveryRecipes.length})`}
         </button>
         <button
           type="button"
