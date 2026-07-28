@@ -26,10 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(data ?? null)
   }
 
+  function sendWelcomeEmail() {
+    void supabase.functions.invoke('send-welcome-email').then(({ error }) => {
+      if (error) console.error('Welkomstmail kon niet worden verstuurd:', error.message)
+    })
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       if (data.session?.user) {
+        sendWelcomeEmail()
         loadProfile(data.session.user.id).finally(() => setLoading(false))
       } else {
         setLoading(false)
@@ -39,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
       if (newSession?.user) {
+        sendWelcomeEmail()
         loadProfile(newSession.user.id)
       } else {
         setProfile(null)
