@@ -66,16 +66,28 @@ function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
 }
 
 function StatsCard({ stats }: { stats: Stats | null }) {
+  const [mobileExpanded, setMobileExpanded] = useState(false)
   if (!stats) return null
   return (
-    <div className="bg-surface border border-line p-5 flex flex-col gap-3">
+    <div className="bg-surface border border-line p-4 sm:p-5 flex flex-col gap-3">
       <h2 className="text-xs font-semibold tracking-widest text-cream/50 uppercase">
         Jouw stats
       </h2>
       <RankBadge points={stats.points} showProgress />
       <div className="border-t border-line" />
-      <StreakBadge weeks={stats.streak} />
-      <div className="border-t border-line" />
+      <div className="flex items-center justify-between gap-3">
+        <StreakBadge weeks={stats.streak} />
+        <button
+          type="button"
+          onClick={() => setMobileExpanded((expanded) => !expanded)}
+          className="lg:hidden shrink-0 text-xs font-semibold text-flame hover:text-orange transition-colors"
+          aria-expanded={mobileExpanded}
+        >
+          {mobileExpanded ? 'Verberg' : 'Bekijk stats'}
+        </button>
+      </div>
+      <div className={`${mobileExpanded ? 'flex' : 'hidden'} lg:flex flex-col gap-3`}>
+        <div className="border-t border-line" />
       {[
         ['Recepten', stats.recipes],
         ['Privé', stats.privateRecipes],
@@ -85,7 +97,8 @@ function StatsCard({ stats }: { stats: Stats | null }) {
           <span className="text-sm text-cream/70">{label}</span>
           <span className="font-display text-2xl">{value}</span>
         </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

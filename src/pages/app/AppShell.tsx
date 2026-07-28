@@ -15,6 +15,31 @@ const NAV_LINKS = [
 
 const ADMIN_LINK = { to: '/app/admin', label: 'Admin', end: false }
 
+function MobileNavIcon({ name }: { name: string }) {
+  const common = {
+    width: 21,
+    height: 21,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  }
+
+  if (name === 'Feed') {
+    return <svg {...common}><path d="M4 5h16M4 12h16M4 19h10" /></svg>
+  }
+  if (name === 'Mijn kookboek') {
+    return <svg {...common}><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z" /><path d="M5 4.5v17M9 6h7" /></svg>
+  }
+  if (name === 'Collega chefs') {
+    return <svg {...common}><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.5-3.2 2.3-5 5.5-5s5 1.8 5.5 5M16 6.5a3 3 0 0 1 0 5.8M16.5 14c2.5.4 3.8 2 4 4.5" /></svg>
+  }
+  return <svg {...common}><circle cx="12" cy="8" r="3.5" /><path d="M5 21c.6-4.2 2.9-6.5 7-6.5s6.4 2.3 7 6.5" /></svg>
+}
+
 function SidebarNav() {
   const { user } = useAuth()
   const links = isAdminEmail(user?.email) ? [...NAV_LINKS, ADMIN_LINK] : NAV_LINKS
@@ -37,6 +62,38 @@ function SidebarNav() {
           {link.label}
         </NavLink>
       ))}
+    </nav>
+  )
+}
+
+function MobileBottomNav() {
+  return (
+    <nav
+      className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur-md"
+      aria-label="Hoofdnavigatie"
+    >
+      <div className="grid grid-cols-4 px-2 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
+        {NAV_LINKS.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            end={link.end}
+            className={({ isActive }) =>
+              `relative flex flex-col items-center justify-center gap-1 min-h-16 px-1 text-[11px] font-medium transition-colors ${
+                isActive ? 'text-flame' : 'text-cream/50'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                {isActive && <span className="absolute top-0 w-8 h-0.5 rounded-full bg-flame" />}
+                <MobileNavIcon name={link.label} />
+                <span>{link.label === 'Mijn kookboek' ? 'Kookboek' : link.label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   )
 }
@@ -214,8 +271,8 @@ export default function AppShell() {
         </div>
       </header>
 
-      <div className="max-w-7xl w-full mx-auto px-6 py-8 flex-1 flex flex-col md:flex-row gap-8">
-        <aside className="md:w-52 shrink-0">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 pt-6 pb-24 md:py-8 flex-1 flex flex-col md:flex-row gap-8">
+        <aside className="hidden md:block md:w-52 shrink-0">
           <SidebarNav />
           <WeekWidget />
         </aside>
@@ -224,6 +281,7 @@ export default function AppShell() {
           <Outlet />
         </main>
       </div>
+      <MobileBottomNav />
     </div>
   )
 }

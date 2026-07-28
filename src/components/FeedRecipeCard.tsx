@@ -48,7 +48,7 @@ export function FeedRecipeCard({ recipe, isOwner }: { recipe: FeedRecipeData; is
       </div>
 
       <Link to={`/app/recept/${recipe.id}`} className="block">
-        <div className="aspect-video bg-surface-2 flex items-center justify-center text-cream/25 text-sm overflow-hidden">
+        <div className="h-40 sm:h-auto sm:aspect-video bg-surface-2 flex items-center justify-center text-cream/25 text-sm overflow-hidden">
           {recipe.cover_photo_url ? (
             <img
               src={recipe.cover_photo_url}
