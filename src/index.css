@@ -41,6 +41,16 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-flame) !important;
+  outline-offset: 3px;
+}
+
 /* Print: app chrome never prints, and printable content forces black-on-white
    regardless of the dark theme's explicit text colors (print:hidden alone
    only handles visibility, not the cream-on-dark palette). */

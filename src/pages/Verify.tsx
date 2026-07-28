@@ -34,7 +34,7 @@ export default function Verify() {
           <Logo className="h-14" />
         </Link>
         {issue ? (
-          <>
+          <div role="alert" aria-live="assertive">
             <h1 className="font-display text-3xl mb-4">
               {issue === 'used-or-expired' ? 'Account mogelijk al bevestigd' : 'Ongeldige link'}
             </h1>
@@ -56,7 +56,7 @@ export default function Verify() {
               </Link>
               .
             </p>
-          </>
+          </div>
         ) : (
           <p className="text-cream/70">Je account wordt bevestigd...</p>
         )}

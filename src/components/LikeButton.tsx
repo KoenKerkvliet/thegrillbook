@@ -71,6 +71,8 @@ export function LikeButton({ kind, targetId, initiallyLiked, initialCount }: Pro
       type="button"
       onClick={toggle}
       disabled={busy}
+      aria-pressed={liked}
+      aria-label={`${liked ? 'Verwijder vuur' : 'Geef vuur'}, ${count} ${count === 1 ? 'reactie' : 'reacties'}`}
       title={liked ? 'Staat in vuur en vlam' : 'Zet in vuur en vlam'}
       className={`flex items-center gap-1.5 text-sm rounded-md px-3 py-1.5 border transition-colors ${
         liked

@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth/AuthProvider'
+import { NotificationProvider } from './lib/notifications/NotificationProvider'
 import { ProtectedRoute } from './lib/auth/ProtectedRoute'
 import { useAuth } from './lib/auth/useAuth'
 import { isAdminEmail } from './lib/admin'
@@ -24,6 +25,7 @@ import Profile from './pages/app/Profile'
 import Admin from './pages/app/Admin'
 import Leaderboard from './pages/app/Leaderboard'
 import Invite from './pages/app/Invite'
+import Activity from './pages/app/Activity'
 
 function AppIndex() {
   const { user } = useAuth()
@@ -34,7 +36,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
+        <NotificationProvider>
+          <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/voorwaarden" element={<Voorwaarden />} />
@@ -63,10 +66,12 @@ function App() {
             <Route path="chefs/:username" element={<ChefProfile />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="delen" element={<Invite />} />
+            <Route path="activiteit" element={<Activity />} />
             <Route path="profiel" element={<Profile />} />
             <Route path="admin" element={<Admin />} />
           </Route>
-        </Routes>
+          </Routes>
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   )

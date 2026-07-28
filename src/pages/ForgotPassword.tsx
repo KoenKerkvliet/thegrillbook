@@ -24,7 +24,7 @@ export default function ForgotPassword() {
         </Link>
 
         {sent ? (
-          <div className="text-center">
+          <div className="text-center" role="status" aria-live="polite">
             <h1 className="font-display text-3xl mb-4">Check je mail</h1>
             <p className="text-cream/70">
               Als er een account bestaat bij <strong>{email}</strong>, hebben we een link gestuurd

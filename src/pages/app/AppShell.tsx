@@ -5,6 +5,7 @@ import { Logo } from '../../components/Logo'
 import { supabase } from '../../lib/supabaseClient'
 import { startOfThisWeek } from '../../lib/relativeTime'
 import { isAdminEmail } from '../../lib/admin'
+import { NotificationBell } from '../../components/NotificationBell'
 
 const NAV_LINKS = [
   { to: '/app', label: 'Feed', end: true },
@@ -313,6 +314,7 @@ export default function AppShell() {
             </>
           )}
 
+          {!admin && <NotificationBell />}
           <ProfileMenu onSignOut={handleSignOut} />
         </div>
       </header>

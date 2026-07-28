@@ -75,13 +75,19 @@ export function ShareButton({ kind, targetId }: { kind: Kind; targetId: string }
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="Delen met een gebruiker"
+        aria-expanded={open}
+        aria-haspopup="dialog"
         title="Delen met een gebruiker"
         className="flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70 hover:border-cream/40 transition-colors"
       >
         <span aria-hidden="true">✈️</span>
       </button>
       {open && (
-        <div className="absolute z-10 top-full left-0 mt-2 w-64 bg-surface border border-line rounded-md p-3 shadow-lg">
+        <div
+          className="absolute z-10 top-full left-0 mt-2 w-64 bg-surface border border-line rounded-md p-3 shadow-lg"
+          role="dialog"
+          aria-label="Delen met een gebruiker"
+        >
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-cream/50">Deel met een gebruiker</p>
             <button
@@ -98,6 +104,7 @@ export function ShareButton({ kind, targetId }: { kind: Kind; targetId: string }
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Zoek gebruikersnaam..."
+            aria-label="Zoek een gebruiker om mee te delen"
             className="w-full rounded-md bg-surface-2 border border-line px-2 py-1.5 text-sm outline-none focus:border-flame mb-2"
           />
           <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">

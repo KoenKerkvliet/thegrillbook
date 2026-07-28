@@ -47,6 +47,7 @@ export function FollowButton({ targetUserId, initiallyFollowing, onToggled }: Pr
       type="button"
       onClick={toggle}
       disabled={busy}
+      aria-pressed={following}
       className={`text-sm font-semibold rounded-md px-4 py-1.5 transition-colors ${
         following
           ? 'border border-line text-cream/70 hover:border-cream/40'

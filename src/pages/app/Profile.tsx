@@ -65,6 +65,7 @@ export default function Profile() {
   const [newHardware, setNewHardware] = useState('')
   const [addingHardware, setAddingHardware] = useState(false)
   const [newPassword, setNewPassword] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
   const [passwordSaving, setPasswordSaving] = useState(false)
   const [passwordError, setPasswordError] = useState<string | null>(null)
   const [passwordSaved, setPasswordSaved] = useState(false)
@@ -221,7 +222,11 @@ export default function Profile() {
             <input type="file" accept="image/*" onChange={handleAvatarChange} className="text-sm" />
           </div>
           {uploading && <p className="text-xs text-cream/50 mt-1">Uploaden...</p>}
-          {uploadError && <p className="text-xs text-flame mt-1">{uploadError}</p>}
+          {uploadError && (
+            <p role="alert" aria-live="assertive" className="text-xs text-flame mt-1">
+              {uploadError}
+            </p>
+          )}
         </div>
 
         <div>
@@ -275,7 +280,11 @@ export default function Profile() {
           >
             {saving ? 'Opslaan...' : 'Opslaan'}
           </button>
-          {saved && <span className="text-sm text-cream/50">Opgeslagen ✓</span>}
+          {saved && (
+            <span role="status" aria-live="polite" className="text-sm text-cream/50">
+              Opgeslagen ✓
+            </span>
+          )}
         </div>
       </form>
 
@@ -327,17 +336,45 @@ export default function Profile() {
       <section>
         <h2 className="font-display text-xl mb-3">Wachtwoord wijzigen</h2>
         <form onSubmit={handleChangePassword} className="flex flex-col gap-3 max-w-sm">
-          <input
-            type="password"
-            required
-            minLength={6}
-            autoComplete="new-password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Nieuw wachtwoord"
-            className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-          />
-          {passwordError && <p className="text-sm text-flame">{passwordError}</p>}
+          <div>
+            <label className="block text-sm text-cream/60 mb-1" htmlFor="newPassword">
+              Nieuw wachtwoord
+            </label>
+            <div className="relative">
+              <input
+                id="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                aria-describedby={`profile-password-help${passwordError ? ' profile-password-error' : ''}`}
+                className="w-full rounded-md bg-surface border border-line px-3 py-2 pr-20 outline-none focus:border-flame"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((visible) => !visible)}
+                className="absolute inset-y-0 right-3 text-xs font-semibold text-cream/50 hover:text-cream"
+                aria-label={showNewPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
+              >
+                {showNewPassword ? 'Verberg' : 'Toon'}
+              </button>
+            </div>
+            <p id="profile-password-help" className="text-xs text-cream/45 mt-1">
+              Minimaal 6 tekens.
+            </p>
+          </div>
+          {passwordError && (
+            <p
+              id="profile-password-error"
+              role="alert"
+              aria-live="assertive"
+              className="text-sm text-flame"
+            >
+              {passwordError}
+            </p>
+          )}
           <div className="flex items-center gap-3">
             <button
               type="submit"
@@ -346,7 +383,11 @@ export default function Profile() {
             >
               {passwordSaving ? 'Bezig...' : 'Wachtwoord wijzigen'}
             </button>
-            {passwordSaved && <span className="text-sm text-cream/50">Gewijzigd ✓</span>}
+            {passwordSaved && (
+              <span role="status" aria-live="polite" className="text-sm text-cream/50">
+                Gewijzigd ✓
+              </span>
+            )}
           </div>
         </form>
       </section>
@@ -370,7 +411,11 @@ export default function Profile() {
             spellCheck={false}
             className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
           />
-          {deleteError && <p className="text-sm text-flame">{deleteError}</p>}
+          {deleteError && (
+            <p role="alert" aria-live="assertive" className="text-sm text-flame">
+              {deleteError}
+            </p>
+          )}
           <button
             type="submit"
             disabled={deleting || !deleteConfirmed}

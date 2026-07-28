@@ -8,6 +8,7 @@ export default function ResetPassword() {
   const navigate = useNavigate()
   const [status, setStatus] = useState<'verifying' | 'ready' | 'error'>('verifying')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -75,18 +76,41 @@ export default function ResetPassword() {
                 <label className="block text-sm text-cream/60 mb-1" htmlFor="password">
                   Nieuw wachtwoord
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  required
-                  minLength={6}
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    aria-describedby={`reset-password-help${error ? ' reset-password-error' : ''}`}
+                    className="w-full rounded-md bg-surface border border-line px-3 py-2 pr-20 outline-none focus:border-flame"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    className="absolute inset-y-0 right-3 text-xs font-semibold text-cream/50 hover:text-cream"
+                    aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
+                  >
+                    {showPassword ? 'Verberg' : 'Toon'}
+                  </button>
+                </div>
+                <p id="reset-password-help" className="text-xs text-cream/45 mt-1">
+                  Minimaal 6 tekens.
+                </p>
               </div>
-              {error && <p className="text-sm text-flame">{error}</p>}
+              {error && (
+                <p
+                  id="reset-password-error"
+                  role="alert"
+                  aria-live="assertive"
+                  className="text-sm text-flame"
+                >
+                  {error}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={saving}

@@ -8,6 +8,7 @@ export default function Login() {
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -62,18 +63,33 @@ export default function Login() {
                 Wachtwoord vergeten?
               </Link>
             </div>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-describedby={error ? 'login-error' : undefined}
+                className="w-full rounded-md bg-surface border border-line px-3 py-2 pr-20 outline-none focus:border-flame"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute inset-y-0 right-3 text-xs font-semibold text-cream/50 hover:text-cream"
+                aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
+              >
+                {showPassword ? 'Verberg' : 'Toon'}
+              </button>
+            </div>
           </div>
 
-          {error && <p className="text-sm text-flame">{error}</p>}
+          {error && (
+            <p id="login-error" role="alert" aria-live="assertive" className="text-sm text-flame">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"

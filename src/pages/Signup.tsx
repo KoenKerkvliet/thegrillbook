@@ -10,6 +10,7 @@ export default function Signup() {
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [checkEmail, setCheckEmail] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -48,7 +49,7 @@ export default function Signup() {
   if (checkEmail) {
     return (
       <div className="min-h-svh bg-ink text-cream flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
+        <div className="w-full max-w-sm text-center" role="status" aria-live="polite">
           <h1 className="font-display text-3xl mb-4">Check je mail</h1>
           <p className="text-cream/70">
             We hebben een bevestigingslink gestuurd naar <strong>{email}</strong>. Klik erop om je
@@ -115,19 +116,37 @@ export default function Signup() {
             <label className="block text-sm text-cream/60 mb-1" htmlFor="password">
               Wachtwoord
             </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-describedby={`signup-password-help${error ? ' signup-error' : ''}`}
+                className="w-full rounded-md bg-surface border border-line px-3 py-2 pr-20 outline-none focus:border-flame"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute inset-y-0 right-3 text-xs font-semibold text-cream/50 hover:text-cream"
+                aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
+              >
+                {showPassword ? 'Verberg' : 'Toon'}
+              </button>
+            </div>
+            <p id="signup-password-help" className="text-xs text-cream/45 mt-1">
+              Minimaal 6 tekens.
+            </p>
           </div>
 
-          {error && <p className="text-sm text-flame">{error}</p>}
+          {error && (
+            <p id="signup-error" role="alert" aria-live="assertive" className="text-sm text-flame">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
