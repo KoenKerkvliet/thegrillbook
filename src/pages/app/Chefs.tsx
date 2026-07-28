@@ -47,6 +47,7 @@ export default function Chefs() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [results, setResults] = useState<Profile[] | null>(null)
+  const [suggested, setSuggested] = useState<Profile[]>([])
   const [following, setFollowing] = useState<Profile[]>([])
   const [followers, setFollowers] = useState<Profile[]>([])
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set())
@@ -70,6 +71,15 @@ export default function Chefs() {
       .filter((p): p is Profile => Boolean(p))
     setFollowing(followingProfiles)
     setFollowingIds(new Set(followingProfiles.map((p) => p.id)))
+
+    const excludeIds = [user.id, ...followingProfiles.map((p) => p.id)]
+    const { data: suggestedRows } = await supabase
+      .from('profiles')
+      .select('*')
+      .not('id', 'in', `(${excludeIds.join(',')})`)
+      .order('created_at', { ascending: false })
+      .limit(3)
+    setSuggested(suggestedRows ?? [])
 
     setFollowers(
       (followerRows ?? [])
@@ -112,7 +122,9 @@ export default function Chefs() {
   }, [query, user])
 
   useEffect(() => {
-    const ids = [...new Set([...(results ?? []), ...following, ...followers].map((p) => p.id))]
+    const ids = [
+      ...new Set([...(results ?? []), ...suggested, ...following, ...followers].map((p) => p.id)),
+    ]
     if (ids.length === 0) {
       setPointsMap(new Map())
       return
@@ -125,7 +137,7 @@ export default function Chefs() {
     return () => {
       cancelled = true
     }
-  }, [results, following, followers])
+  }, [results, suggested, following, followers])
 
   return (
     <div className="max-w-2xl flex flex-col gap-10">
@@ -157,6 +169,28 @@ export default function Chefs() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {suggested.length > 0 && (
+        <div className="lg:hidden">
+          <div className="mb-3">
+            <h2 className="font-display text-lg">Ontdek chefs</h2>
+            <p className="text-sm text-cream/50 mt-1">
+              Bekijk hun profiel en beslis daarna of je ze wilt volgen.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {suggested.map((p) => (
+              <ProfileRow
+                key={p.id}
+                profile={p}
+                points={pointsMap.get(p.id) ?? 0}
+                following={false}
+                onToggled={loadRelations}
+              />
+            ))}
+          </div>
         </div>
       )}
 

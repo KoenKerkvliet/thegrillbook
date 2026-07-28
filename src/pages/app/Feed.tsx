@@ -35,17 +35,25 @@ function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
       <div className="flex flex-col gap-4">
         {chefs.map((chef) => (
           <div key={chef.id} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
-              {chef.avatar_url ? (
-                <img src={chef.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                chef.username.slice(0, 2).toUpperCase()
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{chef.display_name || chef.username}</p>
-              <p className="text-xs text-cream/50 truncate">@{chef.username}</p>
-            </div>
+            <Link
+              to={`/app/chefs/${chef.username}`}
+              className="flex items-center gap-3 flex-1 min-w-0 group"
+              aria-label={`Bekijk het profiel van ${chef.display_name || chef.username}`}
+            >
+              <div className="w-10 h-10 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40 ring-flame group-hover:ring-2 transition-shadow">
+                {chef.avatar_url ? (
+                  <img src={chef.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  chef.username.slice(0, 2).toUpperCase()
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate group-hover:text-flame transition-colors">
+                  {chef.display_name || chef.username}
+                </p>
+                <p className="text-xs text-cream/50 truncate">@{chef.username}</p>
+              </div>
+            </Link>
             <FollowButton targetUserId={chef.id} initiallyFollowing={false} />
           </div>
         ))}
@@ -402,10 +410,8 @@ export default function Feed() {
       </div>
       <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
         <div>{feedColumn}</div>
-        <div className="flex flex-col gap-6">
-          <div className="hidden lg:block">
-            <StatsCard stats={stats} />
-          </div>
+        <div className="hidden lg:flex flex-col gap-6">
+          <StatsCard stats={stats} />
           <SuggestedChefs chefs={suggested} />
         </div>
       </div>
