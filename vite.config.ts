@@ -13,6 +13,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
+        globIgnores: ['images/demo-recipes/**'],
         navigateFallback: '/index.html',
       },
     }),
