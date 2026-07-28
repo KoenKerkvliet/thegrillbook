@@ -174,6 +174,7 @@ function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
 }
 
 function NewMenu() {
+  const { profile } = useAuth()
   const [open, setOpen] = useState(false)
   const ref = useClickOutside<HTMLDivElement>(() => setOpen(false))
 
@@ -210,6 +211,15 @@ function NewMenu() {
           >
             + Nieuw recept
           </NavLink>
+          {profile?.is_official && (
+            <NavLink
+              to="/app/redactie/nieuw"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-flame hover:bg-surface-2 border-t border-line"
+            >
+              Redactiebericht
+            </NavLink>
+          )}
         </div>
       )}
     </div>
@@ -268,7 +278,7 @@ function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
 }
 
 export default function AppShell() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
   const admin = isAdminEmail(user?.email)
 
@@ -308,6 +318,14 @@ export default function AppShell() {
                 >
                   + Recept
                 </NavLink>
+                {profile?.is_official && (
+                  <NavLink
+                    to="/app/redactie/nieuw"
+                    className="border border-flame/50 text-flame text-sm font-semibold px-3 py-1.5 rounded-md hover:bg-flame/10"
+                  >
+                    + Redactie
+                  </NavLink>
+                )}
               </div>
 
               <NewMenu />

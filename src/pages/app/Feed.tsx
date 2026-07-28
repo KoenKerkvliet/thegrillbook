@@ -8,6 +8,7 @@ import { VideoCard, type VideoCardData } from '../../components/VideoCard'
 import { FollowButton } from '../../components/FollowButton'
 import { RankBadge } from '../../components/RankBadge'
 import { StreakBadge } from '../../components/StreakBadge'
+import { EditorialCard } from '../../components/EditorialCard'
 import { isDiscoverableChef } from '../../lib/admin'
 import type { Tables } from '../../types/database'
 
@@ -247,6 +248,34 @@ export default function Feed() {
   const [page, setPage] = useState(1)
   const [onboardingHidden, setOnboardingHidden] = useState(false)
   const [onboardingCompleted, setOnboardingCompleted] = useState(false)
+  const [editorialPosts, setEditorialPosts] = useState<Tables<'editorial_posts'>[]>([])
+
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+
+    async function loadEditorialPosts() {
+      const [{ data: posts }, { data: dismissals }] = await Promise.all([
+        supabase
+          .from('editorial_posts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('editorial_post_dismissals')
+          .select('post_id')
+          .eq('user_id', user!.id),
+      ])
+      if (cancelled) return
+      const dismissedIds = new Set((dismissals ?? []).map((row) => row.post_id))
+      setEditorialPosts((posts ?? []).filter((post) => !dismissedIds.has(post.id)))
+    }
+
+    loadEditorialPosts()
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -557,7 +586,21 @@ export default function Feed() {
       done: items.some((item) => item.kind === 'moment' && item.isOwner),
     },
   ]
+  const visibleEditorialPosts = editorialPosts
+    .filter((post) => {
+      if (post.completion_rule === 'profile') return profileSignals < 2
+      if (post.completion_rule === 'recipe') {
+        return !items.some((item) => item.kind === 'recipe' && item.isOwner)
+      }
+      if (post.completion_rule === 'follow') return (followingCount ?? 0) === 0
+      if (post.completion_rule === 'moment') {
+        return !items.some((item) => item.kind === 'moment' && item.isOwner)
+      }
+      return true
+    })
+    .slice(0, 3)
   const showOnboarding =
+    visibleEditorialPosts.length === 0 &&
     !onboardingHidden &&
     (!onboardingSteps.every((step) => step.done) || !onboardingCompleted)
 
@@ -572,6 +615,14 @@ export default function Feed() {
     if (!user) return
     localStorage.setItem(`bbqheros:onboarding-completed:${user.id}`, 'true')
     setOnboardingCompleted(true)
+  }
+
+  async function dismissEditorialPost(postId: string) {
+    if (!user) return
+    setEditorialPosts((posts) => posts.filter((post) => post.id !== postId))
+    await supabase
+      .from('editorial_post_dismissals')
+      .upsert({ post_id: postId, user_id: user.id })
   }
 
   const feedColumn =
@@ -663,6 +714,13 @@ export default function Feed() {
 
   return (
     <div>
+      {visibleEditorialPosts.length > 0 && (
+        <div className="lg:hidden mb-6 flex flex-col gap-4">
+          {visibleEditorialPosts.map((post) => (
+            <EditorialCard key={post.id} post={post} onDismiss={dismissEditorialPost} />
+          ))}
+        </div>
+      )}
       {showOnboarding && (
         <div className="lg:hidden mb-6">
           <OnboardingCard
@@ -677,6 +735,13 @@ export default function Feed() {
       </div>
       <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
         <div>
+          {visibleEditorialPosts.length > 0 && (
+            <div className="hidden lg:flex mb-6 flex-col gap-4">
+              {visibleEditorialPosts.map((post) => (
+                <EditorialCard key={post.id} post={post} onDismiss={dismissEditorialPost} />
+              ))}
+            </div>
+          )}
           {showOnboarding && (
             <div className="hidden lg:block mb-6">
               <OnboardingCard

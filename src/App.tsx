@@ -26,6 +26,7 @@ import Admin from './pages/app/Admin'
 import Leaderboard from './pages/app/Leaderboard'
 import Invite from './pages/app/Invite'
 import Activity from './pages/app/Activity'
+import EditorialForm from './pages/app/EditorialForm'
 
 function AppIndex() {
   const { user } = useAuth()
@@ -62,6 +63,7 @@ function App() {
             <Route path="recept/:id" element={<RecipeDetail />} />
             <Route path="moment/nieuw" element={<MomentForm />} />
             <Route path="video/nieuw" element={<VideoForm />} />
+            <Route path="redactie/nieuw" element={<EditorialForm />} />
             <Route path="chefs" element={<Chefs />} />
             <Route path="chefs/:username" element={<ChefProfile />} />
             <Route path="leaderboard" element={<Leaderboard />} />

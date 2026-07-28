@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      editorial_post_dismissals: {
+        Row: {
+          dismissed_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          dismissed_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          dismissed_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_post_dismissals_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_post_dismissals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      editorial_posts: {
+        Row: {
+          author_id: string
+          body: string
+          completion_rule: string
+          created_at: string
+          cta_label: string | null
+          cta_path: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          completion_rule?: string
+          created_at?: string
+          cta_label?: string | null
+          cta_path?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          completion_rule?: string
+          created_at?: string
+          cta_label?: string | null
+          cta_path?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
