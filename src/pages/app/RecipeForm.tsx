@@ -16,6 +16,8 @@ type StepDraft = {
   section: string
 }
 
+type RecipeVisibility = 'private' | 'followers' | 'public'
+
 function ListEditor({
   label,
   items,
@@ -157,7 +159,7 @@ export default function RecipeForm() {
   const [cookTimeMinutes, setCookTimeMinutes] = useState('')
   const [servings, setServings] = useState('')
   const [rating, setRating] = useState(0)
-  const [isPublic, setIsPublic] = useState(false)
+  const [visibility, setVisibility] = useState<RecipeVisibility>('private')
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null)
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [mainIngredient, setMainIngredient] = useState('overig')
@@ -189,7 +191,7 @@ export default function RecipeForm() {
       setCookTimeMinutes(recipe.cook_time_minutes?.toString() ?? '')
       setServings(recipe.servings?.toString() ?? '')
       setRating(recipe.rating ?? 0)
-      setIsPublic(recipe.is_public)
+      setVisibility((recipe.visibility ?? (recipe.is_public ? 'followers' : 'private')) as RecipeVisibility)
       setCoverPhotoUrl(recipe.cover_photo_url)
       setYoutubeUrl(recipe.youtube_url ?? '')
       setMainIngredient(recipe.main_ingredient)
@@ -250,7 +252,8 @@ export default function RecipeForm() {
       cook_time_minutes: cookTimeMinutes ? Number(cookTimeMinutes) : null,
       servings: servings ? Number(servings) : null,
       rating: rating || null,
-      is_public: isPublic,
+      is_public: visibility !== 'private',
+      visibility,
       cover_photo_url: coverPhotoUrl,
       youtube_url: youtubeUrl.trim() || null,
       main_ingredient: mainIngredient,
@@ -471,15 +474,38 @@ export default function RecipeForm() {
 
       <StepEditor items={steps} onChange={setSteps} />
 
-      <label className="flex items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={isPublic}
-          onChange={(e) => setIsPublic(e.target.checked)}
-          className="w-4 h-4 accent-flame"
-        />
-        Openbaar voor mijn collega chefs
-      </label>
+      <fieldset>
+        <legend className="block text-sm text-cream/60 mb-2">Wie mag dit recept zien?</legend>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {([
+            ['private', 'Privé', 'Alleen jij'],
+            ['followers', 'Volgers', 'Chefs die jou volgen'],
+            ['public', 'Iedereen', 'Iedereen op BBQHeros'],
+          ] as const).map(([value, label, description]) => (
+            <label
+              key={value}
+              className={`cursor-pointer rounded-md border p-3 transition-colors ${
+                visibility === value
+                  ? 'border-flame bg-flame/10'
+                  : 'border-line bg-surface hover:border-cream/30'
+              }`}
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="radio"
+                  name="visibility"
+                  value={value}
+                  checked={visibility === value}
+                  onChange={() => setVisibility(value)}
+                  className="accent-flame"
+                />
+                {label}
+              </span>
+              <span className="mt-1 block pl-5 text-xs text-cream/45">{description}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {error && <p className="text-sm text-flame">{error}</p>}
 

@@ -638,6 +638,7 @@ export type Database = {
           title: string
           technique: string
           updated_at: string
+          visibility: string
           youtube_url: string | null
         }
         Insert: {
@@ -659,6 +660,7 @@ export type Database = {
           title: string
           technique?: string
           updated_at?: string
+          visibility?: string
           youtube_url?: string | null
         }
         Update: {
@@ -680,6 +682,7 @@ export type Database = {
           title?: string
           technique?: string
           updated_at?: string
+          visibility?: string
           youtube_url?: string | null
         }
         Relationships: [

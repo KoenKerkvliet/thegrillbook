@@ -11,6 +11,7 @@ export type RecipeCardData = {
   servings: number | null
   rating: number | null
   is_public: boolean
+  visibility?: string
   ownerUsername?: string
   original_owner_username?: string | null
   main_ingredient?: string
@@ -64,9 +65,9 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
               Origineel van @{recipe.original_owner_username}
             </p>
           )}
-          {!recipe.is_public && (
+          {recipe.visibility && recipe.visibility !== 'public' && (
             <span className="inline-block mt-2 text-[10px] tracking-wide text-cream/40 border border-line rounded px-1.5 py-0.5">
-              PRIVÉ
+              {recipe.visibility === 'private' ? 'PRIVÉ' : 'VOLGERS'}
             </span>
           )}
         </div>

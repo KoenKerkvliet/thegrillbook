@@ -58,7 +58,7 @@ export default function ChefProfile() {
         supabase
           .from('recipes')
           .select(
-            'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username, main_ingredient, technique, bbq_type, difficulty',
+            'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, visibility, original_owner_username, main_ingredient, technique, bbq_type, difficulty',
           )
           .eq('owner_id', profileData.id)
           .order('created_at', { ascending: false }),

@@ -191,9 +191,9 @@ export default function RecipeDetail() {
             {likeCount} {likeCount === 1 ? 'like' : 'likes'}
           </span>
         )}
-        {!recipe.is_public && (
+        {isOwner && recipe.visibility !== 'public' && (
           <span className="print:hidden text-[10px] tracking-wide text-cream/40 border border-line rounded px-1.5 py-0.5">
-            PRIVÉ
+            {recipe.visibility === 'followers' ? 'VOLGERS' : 'PRIVÉ'}
           </span>
         )}
         <div className="print:hidden">
