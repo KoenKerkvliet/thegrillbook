@@ -108,6 +108,7 @@ insert into public.editorial_posts (
   author_id,
   title,
   body,
+  image_url,
   cta_label,
   cta_path,
   completion_rule
@@ -115,8 +116,9 @@ insert into public.editorial_posts (
 select
   id,
   'Welkom bij BBQHeros',
-  'Dit is jouw persoonlijke BBQ-kookboek én de plek om samen met andere chefs beter te leren barbecueën. Bewaar recepten, log je BBQ-momenten, verzamel handige tutorials en volg chefs die je inspireren.',
-  'Vul je profiel in',
+  'Jouw persoonlijke BBQ-kookboek én de plek om samen beter te leren barbecueën. Bewaar recepten, log je mooiste BBQ-momenten, verzamel handige tutorials en volg chefs die je inspireren. Begin op jouw tempo en bouw grill voor grill aan je eigen BBQ-verhaal.',
+  'https://bbqheros.nl/images/editorial/welcome-bbqheros.webp',
+  'Start met je profiel',
   '/app/profiel',
   'none'
 from public.profiles
