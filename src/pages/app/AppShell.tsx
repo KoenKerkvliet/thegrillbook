@@ -14,7 +14,10 @@ const NAV_LINKS = [
   { to: '/app/profiel', label: 'Profiel', end: false },
 ]
 
-const ADMIN_LINK = { to: '/app/admin', label: 'Admin', end: false }
+const ADMIN_LINKS = [
+  { to: '/app/admin', label: 'Beheer', end: false },
+  { to: '/app/profiel', label: 'Profiel', end: false },
+]
 
 function MobileNavIcon({ name }: { name: string }) {
   const common = {
@@ -41,12 +44,15 @@ function MobileNavIcon({ name }: { name: string }) {
   if (name === 'Leaderboard') {
     return <svg {...common}><path d="M8 21h8M12 17v4M7 4h10v3a5 5 0 0 1-10 0z" /><path d="M7 6H4v1a4 4 0 0 0 4 4M17 6h3v1a4 4 0 0 1-4 4" /></svg>
   }
+  if (name === 'Beheer') {
+    return <svg {...common}><path d="M12 3 4.5 6v5.5c0 4.7 3 8 7.5 9.5 4.5-1.5 7.5-4.8 7.5-9.5V6z" /><path d="M8.5 10h7M8.5 14h4" /></svg>
+  }
   return <svg {...common}><circle cx="12" cy="8" r="3.5" /><path d="M5 21c.6-4.2 2.9-6.5 7-6.5s6.4 2.3 7 6.5" /></svg>
 }
 
 function SidebarNav() {
   const { user } = useAuth()
-  const links = isAdminEmail(user?.email) ? [...NAV_LINKS, ADMIN_LINK] : NAV_LINKS
+  const links = isAdminEmail(user?.email) ? ADMIN_LINKS : NAV_LINKS
 
   return (
     <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
@@ -71,13 +77,16 @@ function SidebarNav() {
 }
 
 function MobileBottomNav() {
+  const { user } = useAuth()
+  const links = isAdminEmail(user?.email) ? ADMIN_LINKS : NAV_LINKS
+
   return (
     <nav
       className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur-md"
       aria-label="Hoofdnavigatie"
     >
-      <div className="grid grid-cols-5 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
-        {NAV_LINKS.map((link) => (
+      <div className={`grid ${links.length === 2 ? 'grid-cols-2' : 'grid-cols-5'} px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]`}>
+        {links.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
@@ -258,8 +267,9 @@ function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
 }
 
 export default function AppShell() {
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const admin = isAdminEmail(user?.email)
 
   async function handleSignOut() {
     await signOut()
@@ -270,34 +280,38 @@ export default function AppShell() {
     <div className="min-h-svh bg-ink text-cream flex flex-col">
       <header className="border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
-          <NavLink to="/app" className="shrink-0">
+          <NavLink to={admin ? '/app/admin' : '/app'} className="shrink-0">
             <Logo className="h-9" />
           </NavLink>
 
           <div className="flex-1" />
 
-          <div className="hidden md:flex items-center gap-3 shrink-0">
-            <NavLink
-              to="/app/moment/nieuw"
-              className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
-            >
-              🔥 Vuur aan
-            </NavLink>
-            <NavLink
-              to="/app/video/nieuw"
-              className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
-            >
-              📺 Video
-            </NavLink>
-            <NavLink
-              to="/app/kookboek/nieuw"
-              className="bg-flame hover:bg-flame-dark transition-colors text-ink text-sm font-semibold px-3 py-1.5 rounded-md"
-            >
-              + Recept
-            </NavLink>
-          </div>
+          {!admin && (
+            <>
+              <div className="hidden md:flex items-center gap-3 shrink-0">
+                <NavLink
+                  to="/app/moment/nieuw"
+                  className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
+                >
+                  🔥 Vuur aan
+                </NavLink>
+                <NavLink
+                  to="/app/video/nieuw"
+                  className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
+                >
+                  📺 Video
+                </NavLink>
+                <NavLink
+                  to="/app/kookboek/nieuw"
+                  className="bg-flame hover:bg-flame-dark transition-colors text-ink text-sm font-semibold px-3 py-1.5 rounded-md"
+                >
+                  + Recept
+                </NavLink>
+              </div>
 
-          <NewMenu />
+              <NewMenu />
+            </>
+          )}
 
           <ProfileMenu onSignOut={handleSignOut} />
         </div>
@@ -306,8 +320,12 @@ export default function AppShell() {
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 pt-6 pb-24 md:py-8 flex-1 flex flex-col md:flex-row gap-8">
         <aside className="hidden md:block md:w-52 shrink-0">
           <SidebarNav />
-          <WeekWidget />
-          <LeaderboardWidget />
+          {!admin && (
+            <>
+              <WeekWidget />
+              <LeaderboardWidget />
+            </>
+          )}
         </aside>
 
         <main className="flex-1 min-w-0">

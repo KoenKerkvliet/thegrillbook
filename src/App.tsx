@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth/AuthProvider'
 import { ProtectedRoute } from './lib/auth/ProtectedRoute'
+import { useAuth } from './lib/auth/useAuth'
+import { isAdminEmail } from './lib/admin'
 import Landing from './pages/Landing'
 import Privacy from './pages/Privacy'
 import Voorwaarden from './pages/Voorwaarden'
@@ -22,6 +24,11 @@ import Profile from './pages/app/Profile'
 import Admin from './pages/app/Admin'
 import Leaderboard from './pages/app/Leaderboard'
 import Invite from './pages/app/Invite'
+
+function AppIndex() {
+  const { user } = useAuth()
+  return isAdminEmail(user?.email) ? <Navigate to="/app/admin" replace /> : <Feed />
+}
 
 function App() {
   return (
@@ -45,7 +52,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Feed />} />
+            <Route index element={<AppIndex />} />
             <Route path="kookboek" element={<Kookboek />} />
             <Route path="kookboek/nieuw" element={<RecipeForm />} />
             <Route path="kookboek/:id/bewerken" element={<RecipeForm />} />

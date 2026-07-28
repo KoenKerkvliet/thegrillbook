@@ -21,6 +21,76 @@ type AdminUser = {
 
 type Tab = 'active' | 'archived'
 
+type UserActionsProps = {
+  target: AdminUser
+  tab: Tab
+  busy: boolean
+  isCurrentUser: boolean
+  onArchive: (target: AdminUser) => void
+  onRestore: (target: AdminUser) => void
+  onDelete: (target: AdminUser) => void
+  onResetPassword: (target: AdminUser) => void
+}
+
+function UserActions({
+  target,
+  tab,
+  busy,
+  isCurrentUser,
+  onArchive,
+  onRestore,
+  onDelete,
+  onResetPassword,
+}: UserActionsProps) {
+  if (isCurrentUser) {
+    return <span className="text-xs text-cream/30">Jouw account</span>
+  }
+
+  if (tab === 'active') {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => onResetPassword(target)}
+          disabled={busy}
+          className="text-xs text-cream/50 hover:text-cream disabled:opacity-50"
+        >
+          Wachtwoord resetten
+        </button>
+        <button
+          type="button"
+          onClick={() => onArchive(target)}
+          disabled={busy}
+          className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
+        >
+          Archiveren
+        </button>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onRestore(target)}
+        disabled={busy}
+        className="text-xs text-cream/50 hover:text-cream disabled:opacity-50"
+      >
+        Herstellen
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(target)}
+        disabled={busy}
+        className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
+      >
+        Verwijderen
+      </button>
+    </>
+  )
+}
+
 function UserRow({
   target,
   tab,
@@ -30,16 +100,7 @@ function UserRow({
   onRestore,
   onDelete,
   onResetPassword,
-}: {
-  target: AdminUser
-  tab: Tab
-  busy: boolean
-  isCurrentUser: boolean
-  onArchive: (target: AdminUser) => void
-  onRestore: (target: AdminUser) => void
-  onDelete: (target: AdminUser) => void
-  onResetPassword: (target: AdminUser) => void
-}) {
+}: UserActionsProps) {
   return (
     <tr className={`border-b border-line/50 ${isCurrentUser ? 'bg-surface/40 text-cream/60' : ''}`}>
       <td className="py-3 pr-4">
@@ -70,49 +131,73 @@ function UserRow({
       <td className="py-3 pr-4 text-right">{target.recipeCount}</td>
       <td className="py-3 pr-4 text-right">{target.momentCount}</td>
       <td className="py-3 pl-4 text-right whitespace-nowrap">
-        {isCurrentUser ? (
-          <span className="text-xs text-cream/30">Jouw account</span>
-        ) : tab === 'active' ? (
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => onResetPassword(target)}
-              disabled={busy}
-              className="text-xs text-cream/50 hover:text-cream disabled:opacity-50"
-            >
-              Wachtwoord resetten
-            </button>
-            <button
-              type="button"
-              onClick={() => onArchive(target)}
-              disabled={busy}
-              className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
-            >
-              Archiveren
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => onRestore(target)}
-              disabled={busy}
-              className="text-xs text-cream/50 hover:text-cream disabled:opacity-50"
-            >
-              Herstellen
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(target)}
-              disabled={busy}
-              className="text-xs text-cream/50 hover:text-flame disabled:opacity-50"
-            >
-              Verwijderen
-            </button>
-          </div>
-        )}
+        <div className="flex items-center justify-end gap-3">
+          <UserActions
+            target={target}
+            tab={tab}
+            busy={busy}
+            isCurrentUser={isCurrentUser}
+            onArchive={onArchive}
+            onRestore={onRestore}
+            onDelete={onDelete}
+            onResetPassword={onResetPassword}
+          />
+        </div>
       </td>
     </tr>
+  )
+}
+
+function UserCard(props: UserActionsProps) {
+  const { target, isCurrentUser } = props
+
+  return (
+    <article className={`border border-line rounded-md p-4 ${isCurrentUser ? 'bg-surface/40 text-cream/60' : 'bg-surface'}`}>
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-surface-2 shrink-0 overflow-hidden flex items-center justify-center text-xs text-cream/40">
+          {target.avatarUrl ? (
+            <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            (target.username ?? '??').slice(0, 2).toUpperCase()
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-semibold truncate">{target.displayName || target.username || '—'}</p>
+            {isCurrentUser && (
+              <span className="rounded-full border border-line px-2 py-0.5 text-[10px] uppercase tracking-wide text-cream/40">
+                Jij
+              </span>
+            )}
+          </div>
+          {target.username && <p className="text-xs text-cream/40">@{target.username}</p>}
+          <p className="text-xs text-cream/60 mt-1 break-all">{target.email ?? '—'}</p>
+        </div>
+      </div>
+
+      <dl className="grid grid-cols-4 gap-2 mt-4 border-y border-line/60 py-3 text-center">
+        <div>
+          <dt className="text-[10px] uppercase tracking-wide text-cream/40">Sinds</dt>
+          <dd className="text-xs mt-1">{relativeTime(target.createdAt)}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase tracking-wide text-cream/40">Punten</dt>
+          <dd className="text-sm font-semibold mt-1">{target.points}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase tracking-wide text-cream/40">Recepten</dt>
+          <dd className="text-sm font-semibold mt-1">{target.recipeCount}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] uppercase tracking-wide text-cream/40">Momenten</dt>
+          <dd className="text-sm font-semibold mt-1">{target.momentCount}</dd>
+        </div>
+      </dl>
+
+      <div className="flex items-center justify-end gap-4 pt-3">
+        <UserActions {...props} />
+      </div>
+    </article>
   )
 }
 
@@ -285,7 +370,24 @@ export default function Admin() {
       {users === null && <p className="text-cream/50 text-sm">Laden...</p>}
 
       {users !== null && (
-        <div className="overflow-x-auto">
+        <>
+          <div className="md:hidden flex flex-col gap-3">
+            {filtered.map((u) => (
+              <UserCard
+                key={u.id}
+                target={u}
+                tab={tab}
+                busy={busyId === u.id}
+                isCurrentUser={u.id === user?.id}
+                onArchive={handleArchive}
+                onRestore={handleRestore}
+                onDelete={handleDelete}
+                onResetPassword={handleResetPassword}
+              />
+            ))}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-cream/50 border-b border-line">
@@ -314,12 +416,14 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
+          </div>
+
           {filtered.length === 0 && (
             <p className="text-cream/50 text-sm py-4">
               {tab === 'active' ? 'Niemand gevonden.' : 'Niemand gearchiveerd.'}
             </p>
           )}
-        </div>
+        </>
       )}
     </div>
   )
