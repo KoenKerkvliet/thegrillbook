@@ -24,6 +24,34 @@ export default function RecipeDetail() {
   const [likedByMe, setLikedByMe] = useState(false)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!id) return
+    try {
+      const saved = JSON.parse(localStorage.getItem(`recipe-ingredients:${id}`) ?? '[]')
+      setCheckedIngredients(new Set(Array.isArray(saved) ? saved : []))
+    } catch {
+      setCheckedIngredients(new Set())
+    }
+  }, [id])
+
+  function toggleIngredient(ingredientId: string) {
+    if (!id) return
+    setCheckedIngredients((current) => {
+      const next = new Set(current)
+      if (next.has(ingredientId)) next.delete(ingredientId)
+      else next.add(ingredientId)
+      localStorage.setItem(`recipe-ingredients:${id}`, JSON.stringify([...next]))
+      return next
+    })
+  }
+
+  function clearIngredientChecks() {
+    if (!id) return
+    setCheckedIngredients(new Set())
+    localStorage.removeItem(`recipe-ingredients:${id}`)
+  }
 
   async function loadAll() {
     if (!id) return
@@ -184,10 +212,40 @@ export default function RecipeDetail() {
 
       {ingredients.length > 0 && (
         <section className="mb-6">
-          <h2 className="font-display text-xl mb-2">Ingrediënten</h2>
-          <ul className="list-disc list-inside text-cream/80 space-y-1">
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <h2 className="font-display text-xl">Ingrediënten</h2>
+            {checkedIngredients.size > 0 && (
+              <button
+                type="button"
+                onClick={clearIngredientChecks}
+                className="print:hidden text-xs text-cream/50 hover:text-flame"
+              >
+                Vinkjes wissen
+              </button>
+            )}
+          </div>
+          <ul className="text-cream/80 space-y-2">
             {ingredients.map((ing) => (
-              <li key={ing.id}>{ing.text}</li>
+              <li key={ing.id}>
+                <label className="group flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={checkedIngredients.has(ing.id)}
+                    onChange={() => toggleIngredient(ing.id)}
+                    className="print:hidden mt-0.5 h-5 w-5 shrink-0 accent-flame"
+                  />
+                  <span
+                    className={`transition-colors ${
+                      checkedIngredients.has(ing.id)
+                        ? 'text-cream/35 line-through'
+                        : 'text-cream/80'
+                    } print:text-black print:no-underline`}
+                  >
+                    <span className="hidden print:inline">• </span>
+                    {ing.text}
+                  </span>
+                </label>
+              </li>
             ))}
           </ul>
         </section>
@@ -196,9 +254,27 @@ export default function RecipeDetail() {
       {steps.length > 0 && (
         <section className="mb-6">
           <h2 className="font-display text-xl mb-2">Stappen</h2>
-          <ol className="list-decimal list-inside text-cream/80 space-y-2">
-            {steps.map((step) => (
-              <li key={step.id}>{step.text}</li>
+          <ol className="text-cream/80">
+            {steps.map((step, index) => (
+              <li
+                key={step.id}
+                className="grid grid-cols-[2.5rem_1fr] gap-x-3 break-inside-avoid print:grid-cols-[2rem_1fr]"
+              >
+                {step.section && (
+                  <h3 className="col-span-2 mt-6 mb-3 font-display text-lg uppercase tracking-wide text-flame first:mt-2">
+                    {step.section}
+                  </h3>
+                )}
+                <div className="flex flex-col items-center self-stretch">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cream/50 font-display text-lg text-cream print:h-7 print:w-7 print:text-sm print:text-black print:border-black">
+                    {index + 1}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <span className="my-2 w-px flex-1 min-h-5 border-l border-dashed border-cream/25 print:border-black/40" />
+                  )}
+                </div>
+                <p className="pb-5 pt-1 leading-relaxed">{step.text}</p>
+              </li>
             ))}
           </ol>
         </section>

@@ -452,18 +452,21 @@ export type Database = {
           id: string
           position: number
           recipe_id: string
+          section: string | null
           text: string
         }
         Insert: {
           id?: string
           position?: number
           recipe_id: string
+          section?: string | null
           text: string
         }
         Update: {
           id?: string
           position?: number
           recipe_id?: string
+          section?: string | null
           text?: string
         }
         Relationships: [

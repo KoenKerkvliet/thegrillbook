@@ -58,7 +58,7 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
 
     const [{ data: ingredients }, { data: steps }] = await Promise.all([
       supabase.from('recipe_ingredients').select('position, text').eq('recipe_id', recipeId).order('position'),
-      supabase.from('recipe_steps').select('position, text').eq('recipe_id', recipeId).order('position'),
+      supabase.from('recipe_steps').select('position, text, section').eq('recipe_id', recipeId).order('position'),
     ])
 
     if (ingredients?.length) {
@@ -69,7 +69,12 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
     if (steps?.length) {
       await supabase
         .from('recipe_steps')
-        .insert(steps.map((s) => ({ recipe_id: inserted.id, position: s.position, text: s.text })))
+        .insert(steps.map((s) => ({
+          recipe_id: inserted.id,
+          position: s.position,
+          text: s.text,
+          section: s.section,
+        })))
     }
 
     setSavedAsId(inserted.id)

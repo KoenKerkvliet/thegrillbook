@@ -11,6 +11,11 @@ import {
   RECIPE_TECHNIQUES,
 } from '../../lib/discoveryOptions'
 
+type StepDraft = {
+  text: string
+  section: string
+}
+
 function ListEditor({
   label,
   items,
@@ -60,6 +65,83 @@ function ListEditor({
   )
 }
 
+function StepEditor({
+  items,
+  onChange,
+}: {
+  items: StepDraft[]
+  onChange: (items: StepDraft[]) => void
+}) {
+  return (
+    <fieldset>
+      <legend className="block text-sm text-cream/60 mb-2">Stappen</legend>
+      <p className="text-xs text-cream/40 mb-3">
+        Voeg bij de eerste stap van een nieuwe fase eventueel een tussenkopje toe.
+      </p>
+      <div className="flex flex-col gap-3">
+        {items.map((item, i) => (
+          <div key={i} className="rounded-lg border border-line bg-surface/40 p-3">
+            <div className="flex items-start gap-3">
+              <span
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-flame/60 font-display text-lg text-flame"
+                aria-hidden="true"
+              >
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1 space-y-2">
+                <label className="sr-only" htmlFor={`step-${i}`}>
+                  Stap {i + 1}
+                </label>
+                <textarea
+                  id={`step-${i}`}
+                  value={item.text}
+                  rows={2}
+                  onChange={(e) => {
+                    const next = [...items]
+                    next[i] = { ...item, text: e.target.value }
+                    onChange(next)
+                  }}
+                  placeholder="Kruid de ribs en laat 1 uur rusten"
+                  className="w-full resize-y rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+                />
+                <label className="block text-xs text-cream/50" htmlFor={`step-section-${i}`}>
+                  Tussenkopje vóór deze stap <span className="text-cream/30">(optioneel)</span>
+                </label>
+                <input
+                  id={`step-section-${i}`}
+                  value={item.section}
+                  onChange={(e) => {
+                    const next = [...items]
+                    next[i] = { ...item, section: e.target.value }
+                    onChange(next)
+                  }}
+                  placeholder="Bijvoorbeeld: Voorbereiden"
+                  className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+                className="text-cream/40 hover:text-flame px-1 py-1"
+                aria-label={`Stap ${i + 1} verwijderen`}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange([...items, { text: '', section: '' }])}
+        className="mt-2 text-sm text-flame hover:underline"
+      >
+        + Stap toevoegen
+      </button>
+    </fieldset>
+  )
+}
+
 export default function RecipeForm() {
   const { user } = useAuth()
   const { id } = useParams()
@@ -84,7 +166,7 @@ export default function RecipeForm() {
   const [difficulty, setDifficulty] = useState('gemiddeld')
   const [uploading, setUploading] = useState(false)
   const [ingredients, setIngredients] = useState<string[]>([''])
-  const [steps, setSteps] = useState<string[]>([''])
+  const [steps, setSteps] = useState<StepDraft[]>([{ text: '', section: '' }])
 
   useEffect(() => {
     if (!id) return
@@ -115,7 +197,11 @@ export default function RecipeForm() {
       setBbqType(recipe.bbq_type)
       setDifficulty(recipe.difficulty)
       setIngredients(ingredientRows?.length ? ingredientRows.map((r) => r.text) : [''])
-      setSteps(stepRows?.length ? stepRows.map((r) => r.text) : [''])
+      setSteps(
+        stepRows?.length
+          ? stepRows.map((r) => ({ text: r.text, section: r.section ?? '' }))
+          : [{ text: '', section: '' }],
+      )
       setLoading(false)
     }
 
@@ -174,7 +260,9 @@ export default function RecipeForm() {
     }
 
     const cleanIngredients = ingredients.map((t) => t.trim()).filter(Boolean)
-    const cleanSteps = steps.map((t) => t.trim()).filter(Boolean)
+    const cleanSteps = steps
+      .map((step) => ({ text: step.text.trim(), section: step.section.trim() || null }))
+      .filter((step) => Boolean(step.text))
 
     let recipeId = id
 
@@ -212,7 +300,12 @@ export default function RecipeForm() {
     if (cleanSteps.length) {
       await supabase
         .from('recipe_steps')
-        .insert(cleanSteps.map((text, position) => ({ recipe_id: recipeId!, text, position })))
+        .insert(cleanSteps.map((step, position) => ({
+          recipe_id: recipeId!,
+          text: step.text,
+          section: step.section,
+          position,
+        })))
     }
 
     setSaving(false)
@@ -376,12 +469,7 @@ export default function RecipeForm() {
         placeholder="500g spare ribs"
       />
 
-      <ListEditor
-        label="Stappen"
-        items={steps}
-        onChange={setSteps}
-        placeholder="Kruid de ribs en laat 1 uur rusten"
-      />
+      <StepEditor items={steps} onChange={setSteps} />
 
       <label className="flex items-center gap-3 text-sm">
         <input
