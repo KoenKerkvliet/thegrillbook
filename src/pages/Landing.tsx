@@ -60,6 +60,83 @@ const FEATURES = [
   },
 ]
 
+const SHOWCASE_RECIPES = [
+  {
+    title: 'Sticky Cola-Bourbon Spareribs',
+    chef: 'Bram de Vries',
+    image: 'images/demo-recipes/sticky-cola-bourbon-spareribs.png',
+    time: '4 uur 30',
+    rating: 5,
+    tag: 'Low & slow',
+  },
+  {
+    title: 'Zalm op Cederhout',
+    chef: 'Noor El Amrani',
+    image: 'images/demo-recipes/zalm-cederhout.png',
+    time: '45 min',
+    rating: 5,
+    tag: 'Vis',
+  },
+  {
+    title: 'Reverse-Seared Tomahawk',
+    chef: 'Daan Vermeer',
+    image: 'images/demo-recipes/reverse-seared-tomahawk.png',
+    time: '1 uur 50',
+    rating: 5,
+    tag: 'Vlees',
+  },
+]
+
+const CHEFS = [
+  {
+    initials: 'BV',
+    name: 'Bram de Vries',
+    handle: '@bram_de_vries',
+    bio: 'Klassieke Amerikaanse barbecue, stevige smaken en koken op echt vuur.',
+    recipes: ['sticky-cola-bourbon-spareribs.png', 'jalapeno-smashburgers.png'],
+  },
+  {
+    initials: 'NE',
+    name: 'Noor El Amrani',
+    handle: '@noor_el_amrani',
+    bio: 'Mediterrane smaken, verse ingrediënten en precies genoeg rook.',
+    recipes: ['zalm-cederhout.png', 'gegrilde-perzik-burrata.png'],
+  },
+  {
+    initials: 'DV',
+    name: 'Daan Vermeer',
+    handle: '@daan_vermeer',
+    bio: 'Low & slow, goed vlees en lange avonden rond de barbecue.',
+    recipes: ['beef-short-ribs.png', 'gerookte-mac-cheese.png'],
+  },
+]
+
+function ShowcaseRecipeCard({ recipe }: { recipe: (typeof SHOWCASE_RECIPES)[number] }) {
+  return (
+    <article className="group gsap-reveal bg-surface border border-line overflow-hidden rounded-lg">
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <img
+          src={`${import.meta.env.BASE_URL}${recipe.image}`}
+          alt={recipe.title}
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+        />
+        <span className="absolute left-4 top-4 rounded-full bg-ink/85 backdrop-blur-sm px-3 py-1 text-xs font-semibold">
+          {recipe.tag}
+        </span>
+      </div>
+      <div className="p-5">
+        <p className="text-xs text-flame font-semibold mb-2">{recipe.chef}</p>
+        <h3 className="font-display text-2xl leading-tight mb-4">{recipe.title}</h3>
+        <div className="flex items-center justify-between text-sm text-cream/60">
+          <StarRating value={recipe.rating} size="sm" />
+          <span>{recipe.time}</span>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 function RecipePreviewCard() {
   return (
     <div className="relative">
@@ -94,30 +171,30 @@ function MockFeedCard() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate flex items-center gap-1.5">
-            Koen
-            <RankIcon points={17} />
+            Noor El Amrani
+            <RankIcon points={42} />
           </p>
-          <p className="text-xs text-cream/50">@koen · 2 uur</p>
+          <p className="text-xs text-cream/50">@noor_el_amrani · 2 uur</p>
         </div>
       </div>
 
       <div className="aspect-video overflow-hidden">
         <img
-          src={`${import.meta.env.BASE_URL}images/hero-spareribs.webp`}
-          alt=""
+          src={`${import.meta.env.BASE_URL}images/demo-recipes/zalm-cederhout.png`}
+          alt="Zalm op cederhout met citroen en dille"
           className="w-full h-full object-cover"
         />
       </div>
 
       <div className="p-5">
-        <h3 className="font-display text-2xl leading-tight mb-2">Spareribs, 6 uur laag</h3>
+        <h3 className="font-display text-2xl leading-tight mb-2">Zalm op Cederhout</h3>
         <div className="flex flex-wrap items-center gap-3 text-sm text-cream/60 mb-3">
           <StarRating value={5} size="sm" />
-          <span>360 min</span>
-          <span>5 personen</span>
+          <span>45 min</span>
+          <span>4 personen</span>
         </div>
         <p className="text-cream/70 text-sm leading-relaxed mb-4">
-          Eindelijk de bark waar ik voor ging. Volgende keer een uur langer roken.
+          Zachte zalm met subtiele cederrook, maple glaze, citroen en verse dille.
         </p>
         <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-line">
           <span className="flex items-center gap-1.5 text-sm rounded-md px-3 py-1.5 border bg-flame/10 border-flame text-flame">
@@ -267,6 +344,9 @@ export default function Landing() {
           <Logo className="h-10" />
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm text-cream/60">
+          <a href="#recepten" className="hover:text-cream">
+            Recepten
+          </a>
           <a href="#functies" className="hover:text-cream">
             Functies
           </a>
@@ -305,8 +385,8 @@ export default function Landing() {
             </span>
           </h1>
           <p className="gsap-hero-sub text-cream/70 max-w-md mb-8">
-            Log elk gerecht dat je maakt — ingrediënten, stappen, en wat er misging. Wat je krijgt
-            is geen app vol andermans recepten, maar jouw kookboek.
+            Bewaar recepten, volg andere BBQ-liefhebbers en bouw stap voor stap je eigen digitale
+            grillboek. Met ruimte voor wat werkte — en wat de volgende keer beter kan.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <Link
@@ -316,10 +396,10 @@ export default function Landing() {
               Maak een account
             </Link>
             <a
-              href="#functies"
+              href="#recepten"
               className="gsap-hero-cta border border-line hover:border-cream/40 transition-colors px-6 py-3 rounded-md text-center font-semibold"
             >
-              Kijk eerst rond
+              Bekijk de recepten
             </a>
           </div>
           <p className="gsap-hero-note text-xs text-cream/40">Gratis · Geen creditcard nodig</p>
@@ -327,6 +407,37 @@ export default function Landing() {
 
         <RecipePreviewCard />
       </main>
+
+      <section id="recepten" className="gsap-reveal-section border-t border-line bg-surface/35">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+            <div className="gsap-reveal max-w-2xl">
+              <div className="flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
+                <span className="w-6 h-px bg-flame" />
+                VERS VAN DE GRILL
+              </div>
+              <h2 className="font-display text-4xl sm:text-5xl leading-[0.95] mb-4">
+                Wat staat er binnenkort bij jou op het rooster?
+              </h2>
+              <p className="text-cream/60 max-w-xl">
+                Ontdek wat andere BBQ-liefhebbers maken, bewaar je favorieten en geef er op jouw
+                manier een draai aan.
+              </p>
+            </div>
+            <Link
+              to="/registreren"
+              className="gsap-reveal text-sm font-semibold text-flame hover:text-cream transition-colors"
+            >
+              Bewaar je eerste recept →
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {SHOWCASE_RECIPES.map((recipe) => (
+              <ShowcaseRecipeCard key={recipe.title} recipe={recipe} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section id="functies" className="gsap-reveal-section border-t border-line">
         <div className="max-w-6xl mx-auto px-6 py-20">
@@ -409,6 +520,56 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="gsap-reveal-section border-t border-line bg-surface/40">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <div className="gsap-reveal max-w-2xl mb-12">
+            <div className="flex items-center gap-2 text-flame text-xs font-semibold tracking-widest mb-4">
+              <span className="w-6 h-px bg-flame" />
+              ONTDEK BBQ-CHEFS
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl leading-[0.95] mb-4">
+              Volg mensen met smaak.
+            </h2>
+            <p className="text-cream/60 max-w-xl">
+              Van snelle doordeweekse grills tot een nacht naast de smoker. Jij bepaalt wie er in
+              je feed verschijnt.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {CHEFS.map((chef) => (
+              <article
+                key={chef.handle}
+                className="gsap-reveal rounded-lg border border-line bg-surface overflow-hidden"
+              >
+                <div className="grid grid-cols-2 h-32">
+                  {chef.recipes.map((recipe) => (
+                    <img
+                      key={recipe}
+                      src={`${import.meta.env.BASE_URL}images/demo-recipes/${recipe}`}
+                      alt=""
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ))}
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="w-11 h-11 rounded-full bg-flame text-ink flex items-center justify-center font-bold text-sm">
+                      {chef.initials}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold">{chef.name}</h3>
+                      <p className="text-xs text-cream/45">{chef.handle} · 5 recepten</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-cream/65 leading-relaxed min-h-11">{chef.bio}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="gsap-reveal-section bg-cream text-ink">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <h2 className="gsap-reveal font-display text-3xl sm:text-4xl leading-[0.95] mb-12">
@@ -429,13 +590,13 @@ export default function Landing() {
       <section className="border-t border-line">
         <div className="max-w-6xl mx-auto px-6 py-20 text-center">
           <h2 className="gsap-cta-heading font-display text-4xl sm:text-5xl leading-[0.95] mb-6">
-            Tijd om je eigen shit te koken.
+            Klaar om je volgende favoriet te bewaren?
           </h2>
           <Link
             to="/registreren"
             className="gsap-cta-button bg-flame hover:bg-flame-dark transition-colors text-ink font-semibold px-8 py-3.5 rounded-md inline-block"
           >
-            Begin je kookboek
+            Maak gratis je grillboek
           </Link>
         </div>
       </section>
