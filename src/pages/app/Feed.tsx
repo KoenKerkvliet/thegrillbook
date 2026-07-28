@@ -8,6 +8,7 @@ import { VideoCard, type VideoCardData } from '../../components/VideoCard'
 import { FollowButton } from '../../components/FollowButton'
 import { RankBadge } from '../../components/RankBadge'
 import { StreakBadge } from '../../components/StreakBadge'
+import { isDiscoverableChef } from '../../lib/admin'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
@@ -309,9 +310,13 @@ export default function Feed() {
       )
 
       const excludeIds = [user!.id, ...followingIds]
-      let suggestedQuery = supabase.from('profiles').select('*').not('id', 'in', `(${excludeIds.join(',')})`)
+      const suggestedQuery = supabase
+        .from('profiles')
+        .select('*')
+        .not('id', 'in', `(${excludeIds.join(',')})`)
+        .neq('username', 'admin')
       const { data: suggestedRows } = await suggestedQuery.order('created_at', { ascending: false }).limit(3)
-      if (!cancelled) setSuggested(suggestedRows ?? [])
+      if (!cancelled) setSuggested((suggestedRows ?? []).filter(isDiscoverableChef))
 
       const [
         { count: recipeCount },

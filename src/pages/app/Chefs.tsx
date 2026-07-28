@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { FollowButton } from '../../components/FollowButton'
 import { RankIcon } from '../../components/RankIcon'
+import { isDiscoverableChef } from '../../lib/admin'
 import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
@@ -68,7 +69,7 @@ export default function Chefs() {
 
     const followingProfiles = (followingRows ?? [])
       .map((r) => r.profiles as Profile | null)
-      .filter((p): p is Profile => Boolean(p))
+      .filter((p): p is Profile => Boolean(p) && isDiscoverableChef(p!))
     setFollowing(followingProfiles)
     setFollowingIds(new Set(followingProfiles.map((p) => p.id)))
 
@@ -77,14 +78,15 @@ export default function Chefs() {
       .from('profiles')
       .select('*')
       .not('id', 'in', `(${excludeIds.join(',')})`)
+      .neq('username', 'admin')
       .order('created_at', { ascending: false })
       .limit(3)
-    setSuggested(suggestedRows ?? [])
+    setSuggested((suggestedRows ?? []).filter(isDiscoverableChef))
 
     setFollowers(
       (followerRows ?? [])
         .map((r) => r.profiles as Profile | null)
-        .filter((p): p is Profile => Boolean(p)),
+        .filter((p): p is Profile => Boolean(p) && isDiscoverableChef(p!)),
     )
   }
 
@@ -112,8 +114,9 @@ export default function Chefs() {
         .select('*')
         .ilike('username', `%${query.trim()}%`)
         .neq('id', user.id)
+        .neq('username', 'admin')
         .limit(20)
-      if (!cancelled) setResults(data ?? [])
+      if (!cancelled) setResults((data ?? []).filter(isDiscoverableChef))
     }, 250)
     return () => {
       cancelled = true
@@ -173,7 +176,7 @@ export default function Chefs() {
       )}
 
       {suggested.length > 0 && (
-        <div className="lg:hidden">
+        <div>
           <div className="mb-3">
             <h2 className="font-display text-lg">Ontdek chefs</h2>
             <p className="text-sm text-cream/50 mt-1">
