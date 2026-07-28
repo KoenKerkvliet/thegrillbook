@@ -20,6 +20,8 @@ type AdminUser = {
 }
 
 type Tab = 'active' | 'archived'
+type UserFilter = 'all' | 'recent' | 'inactive' | 'never' | 'with_content' | 'without_content'
+type UserSort = 'newest' | 'last_active' | 'points' | 'content' | 'name'
 
 type UserActionsProps = {
   target: AdminUser
@@ -127,6 +129,9 @@ function UserRow({
       </td>
       <td className="py-3 pr-4 text-cream/70">{target.email ?? '—'}</td>
       <td className="py-3 pr-4 text-cream/50">{relativeTime(target.createdAt)}</td>
+      <td className="py-3 pr-4 text-cream/50">
+        {target.lastSignInAt ? relativeTime(target.lastSignInAt) : 'Nog nooit'}
+      </td>
       <td className="py-3 pr-4 text-right">{target.points}</td>
       <td className="py-3 pr-4 text-right">{target.recipeCount}</td>
       <td className="py-3 pr-4 text-right">{target.momentCount}</td>
@@ -193,6 +198,9 @@ function UserCard(props: UserActionsProps) {
           <dd className="text-sm font-semibold mt-1">{target.momentCount}</dd>
         </div>
       </dl>
+      <p className="mt-3 text-xs text-cream/40">
+        Laatst actief: {target.lastSignInAt ? relativeTime(target.lastSignInAt) : 'nog nooit'}
+      </p>
 
       <div className="flex items-center justify-end gap-4 pt-3">
         <UserActions {...props} />
@@ -209,6 +217,8 @@ export default function Admin() {
   const [notice, setNotice] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState<Tab>('active')
+  const [userFilter, setUserFilter] = useState<UserFilter>('all')
+  const [userSort, setUserSort] = useState<UserSort>('newest')
   const [busyId, setBusyId] = useState<string | null>(null)
 
   function loadUsers() {
@@ -233,14 +243,44 @@ export default function Admin() {
   const filtered = useMemo(() => {
     const list = tab === 'active' ? activeUsers : archivedUsers
     const q = query.trim().toLowerCase()
-    if (!q) return list
-    return list.filter(
-      (u) =>
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000
+    return list
+      .filter((u) =>
+        !q ||
         u.username?.toLowerCase().includes(q) ||
         u.displayName?.toLowerCase().includes(q) ||
         u.email?.toLowerCase().includes(q),
-    )
-  }, [tab, activeUsers, archivedUsers, query])
+      )
+      .filter((u) => {
+        if (userFilter === 'recent') {
+          return Boolean(u.lastSignInAt && new Date(u.lastSignInAt).getTime() >= thirtyDaysAgo)
+        }
+        if (userFilter === 'inactive') {
+          return Boolean(u.lastSignInAt && new Date(u.lastSignInAt).getTime() < thirtyDaysAgo)
+        }
+        if (userFilter === 'never') return !u.lastSignInAt
+        if (userFilter === 'with_content') return u.recipeCount + u.momentCount > 0
+        if (userFilter === 'without_content') return u.recipeCount + u.momentCount === 0
+        return true
+      })
+      .sort((a, b) => {
+        if (userSort === 'last_active') {
+          return (b.lastSignInAt ? new Date(b.lastSignInAt).getTime() : 0)
+            - (a.lastSignInAt ? new Date(a.lastSignInAt).getTime() : 0)
+        }
+        if (userSort === 'points') return b.points - a.points
+        if (userSort === 'content') {
+          return (b.recipeCount + b.momentCount) - (a.recipeCount + a.momentCount)
+        }
+        if (userSort === 'name') {
+          return (a.displayName || a.username || a.email || '').localeCompare(
+            b.displayName || b.username || b.email || '',
+            'nl',
+          )
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      })
+  }, [tab, activeUsers, archivedUsers, query, userFilter, userSort])
 
   const stats = useMemo(() => {
     if (!users) return null
@@ -360,12 +400,49 @@ export default function Admin() {
         ))}
       </div>
 
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Zoek op gebruikersnaam, naam of e-mail..."
-        className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-      />
+      <div className="grid gap-3 md:grid-cols-[1fr_190px_190px]">
+        <label className="sr-only" htmlFor="admin-user-search">Gebruikers zoeken</label>
+        <input
+          id="admin-user-search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Zoek op gebruikersnaam, naam of e-mail..."
+          className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+        />
+        <label className="sr-only" htmlFor="admin-user-filter">Gebruikers filteren</label>
+        <select
+          id="admin-user-filter"
+          value={userFilter}
+          onChange={(e) => setUserFilter(e.target.value as UserFilter)}
+          className="rounded-md bg-surface border border-line px-3 py-2 text-sm outline-none focus:border-flame"
+        >
+          <option value="all">Alle gebruikers</option>
+          <option value="recent">Actief in 30 dagen</option>
+          <option value="inactive">30+ dagen niet actief</option>
+          <option value="never">Nog nooit ingelogd</option>
+          <option value="with_content">Met eigen content</option>
+          <option value="without_content">Zonder eigen content</option>
+        </select>
+        <label className="sr-only" htmlFor="admin-user-sort">Gebruikers sorteren</label>
+        <select
+          id="admin-user-sort"
+          value={userSort}
+          onChange={(e) => setUserSort(e.target.value as UserSort)}
+          className="rounded-md bg-surface border border-line px-3 py-2 text-sm outline-none focus:border-flame"
+        >
+          <option value="newest">Nieuwste eerst</option>
+          <option value="last_active">Laatst actief</option>
+          <option value="points">Meeste punten</option>
+          <option value="content">Meeste content</option>
+          <option value="name">Naam A–Z</option>
+        </select>
+      </div>
+
+      {users !== null && (
+        <p className="text-xs text-cream/40">
+          {filtered.length} {filtered.length === 1 ? 'gebruiker' : 'gebruikers'} gevonden
+        </p>
+      )}
 
       {users === null && <p className="text-cream/50 text-sm">Laden...</p>}
 
@@ -394,6 +471,7 @@ export default function Admin() {
                 <th className="py-2 pr-4 font-medium">Chef</th>
                 <th className="py-2 pr-4 font-medium">E-mail</th>
                 <th className="py-2 pr-4 font-medium">Aangemeld</th>
+                <th className="py-2 pr-4 font-medium">Laatst actief</th>
                 <th className="py-2 pr-4 font-medium text-right">Punten</th>
                 <th className="py-2 pr-4 font-medium text-right">Recepten</th>
                 <th className="py-2 pr-4 font-medium text-right">Momenten</th>

@@ -598,7 +598,7 @@ export default function Feed() {
       }
       return true
     })
-    .slice(0, 3)
+    .slice(0, 1)
   const showOnboarding =
     visibleEditorialPosts.length === 0 &&
     !onboardingHidden &&
