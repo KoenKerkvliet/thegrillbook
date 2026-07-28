@@ -547,13 +547,14 @@ export default function Landing() {
               </div>
             ))}
             <span className="gsap-rank-arrow text-cream/20 text-xl">→</span>
-            <div className="gsap-rank-icon flex items-center gap-2 text-cream/40 text-sm">
+            <div className="gsap-rank-icon flex flex-col items-center gap-1.5 w-24 text-center">
               <img
                 src={`${import.meta.env.BASE_URL}${RANKS[RANKS.length - 1].icon}`}
                 alt=""
-                className="w-10 h-10 object-contain"
+                className="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] object-contain drop-shadow-[0_0_14px_rgba(255,82,20,0.22)]"
               />
-              <span>... tot BBQ General</span>
+              <span className="text-xs font-semibold text-orange leading-tight">BBQ General</span>
+              <span className="text-[10px] uppercase tracking-wider text-cream/35">Hoogste rang</span>
             </div>
           </div>
         </div>
