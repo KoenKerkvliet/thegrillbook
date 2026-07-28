@@ -21,6 +21,7 @@ import ChefProfile from './pages/app/ChefProfile'
 import Profile from './pages/app/Profile'
 import Admin from './pages/app/Admin'
 import Leaderboard from './pages/app/Leaderboard'
+import Invite from './pages/app/Invite'
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
             <Route path="chefs" element={<Chefs />} />
             <Route path="chefs/:username" element={<ChefProfile />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route path="delen" element={<Invite />} />
             <Route path="profiel" element={<Profile />} />
             <Route path="admin" element={<Admin />} />
           </Route>

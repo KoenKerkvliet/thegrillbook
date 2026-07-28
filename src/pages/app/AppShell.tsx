@@ -234,6 +234,13 @@ function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
           >
             Profiel
           </NavLink>
+          <NavLink
+            to="/app/delen"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
+          >
+            BBQHeros delen
+          </NavLink>
           <button
             type="button"
             onClick={() => {
