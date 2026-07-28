@@ -33,6 +33,126 @@ type FeedItem =
   | { kind: 'moment'; created_at: string; moment: MomentCardData; isOwner: boolean }
   | { kind: 'video'; created_at: string; video: VideoCardData; isOwner: boolean }
 
+type OnboardingStep = {
+  label: string
+  description: string
+  action: string
+  to: string
+  done: boolean
+}
+
+function OnboardingCard({
+  steps,
+  onHide,
+  onComplete,
+}: {
+  steps: OnboardingStep[]
+  onHide: () => void
+  onComplete: () => void
+}) {
+  const completedCount = steps.filter((step) => step.done).length
+  const allDone = completedCount === steps.length
+  const nextStep = steps.find((step) => !step.done)
+  const progress = Math.round((completedCount / steps.length) * 100)
+
+  if (allDone) {
+    return (
+      <section className="border border-flame/40 bg-flame/5 rounded-md p-5 sm:p-6">
+        <p className="text-xs font-semibold tracking-widest text-flame uppercase mb-2">
+          Je grillboek staat
+        </p>
+        <h2 className="font-display text-2xl mb-2">Eerste vuur ontstoken.</h2>
+        <p className="text-sm text-cream/65 mb-5">
+          Je profiel, kookboek en netwerk zijn gestart. Vanaf hier bouw je verder op jouw manier.
+        </p>
+        <button
+          type="button"
+          onClick={onComplete}
+          className="bg-flame hover:bg-flame-dark transition-colors text-ink text-sm font-semibold px-4 py-2 rounded-md"
+        >
+          Mooi, verder grillen
+        </button>
+      </section>
+    )
+  }
+
+  return (
+    <section className="border border-line bg-surface rounded-md p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold tracking-widest text-flame uppercase mb-1">
+            Steek je eerste vuur aan
+          </p>
+          <h2 className="font-display text-2xl">Maak BBQHeros van jou.</h2>
+        </div>
+        <span className="text-xs text-cream/45 whitespace-nowrap">
+          {completedCount} van {steps.length}
+        </span>
+      </div>
+
+      <div
+        className="h-1.5 rounded-full bg-surface-2 overflow-hidden mt-4"
+        role="progressbar"
+        aria-label="Voortgang onboarding"
+        aria-valuemin={0}
+        aria-valuemax={steps.length}
+        aria-valuenow={completedCount}
+      >
+        <div
+          className="h-full rounded-full bg-flame transition-[width] duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <ul className="mt-5 divide-y divide-line/70">
+        {steps.map((step) => (
+          <li key={step.label} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+            <span
+              className={`mt-0.5 w-5 h-5 shrink-0 rounded-full border flex items-center justify-center text-xs ${
+                step.done
+                  ? 'border-flame bg-flame text-ink'
+                  : 'border-cream/25 text-transparent'
+              }`}
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm font-semibold ${step.done ? 'text-cream/45 line-through' : ''}`}>
+                {step.label}
+              </p>
+              {!step.done && <p className="text-xs text-cream/45 mt-0.5">{step.description}</p>}
+            </div>
+            {!step.done && (
+              <Link to={step.to} className="text-xs font-semibold text-flame hover:underline shrink-0">
+                {step.action}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-line">
+        {nextStep && (
+          <Link
+            to={nextStep.to}
+            className="bg-flame hover:bg-flame-dark transition-colors text-ink text-sm font-semibold px-4 py-2 rounded-md"
+          >
+            {nextStep.action}
+          </Link>
+        )}
+        <button
+          type="button"
+          onClick={onHide}
+          className="text-xs text-cream/40 hover:text-cream"
+        >
+          Voor nu verbergen
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function SuggestedChefs({ chefs }: { chefs: Profile[] }) {
   if (chefs.length === 0) return null
   return (
@@ -119,12 +239,23 @@ function StatsCard({ stats }: { stats: Stats | null }) {
 }
 
 export default function Feed() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [items, setItems] = useState<FeedItem[] | null>(null)
   const [followingCount, setFollowingCount] = useState<number | null>(null)
   const [suggested, setSuggested] = useState<Profile[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [page, setPage] = useState(1)
+  const [onboardingHidden, setOnboardingHidden] = useState(false)
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    const hiddenUntil = Number(localStorage.getItem(`bbqheros:onboarding-hidden:${user.id}`) ?? 0)
+    setOnboardingHidden(hiddenUntil > Date.now())
+    setOnboardingCompleted(
+      localStorage.getItem(`bbqheros:onboarding-completed:${user.id}`) === 'true',
+    )
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -391,6 +522,57 @@ export default function Feed() {
     (currentPage - 1) * FEED_PAGE_SIZE,
     currentPage * FEED_PAGE_SIZE,
   )
+  const profileSignals = [
+    Boolean(profile?.avatar_url),
+    Boolean(profile?.bio?.trim()),
+    Boolean(profile?.specialties.length || profile?.favorite_techniques.length),
+  ].filter(Boolean).length
+  const onboardingSteps: OnboardingStep[] = [
+    {
+      label: 'Maak je profiel herkenbaar',
+      description: 'Voeg bijvoorbeeld een foto, bio of specialiteiten toe.',
+      action: 'Profiel aanvullen',
+      to: '/app/profiel',
+      done: profileSignals >= 2,
+    },
+    {
+      label: 'Zet je eerste recept in je kookboek',
+      description: 'Bewaar de ingrediënten en stappen van een eigen favoriet.',
+      action: 'Recept toevoegen',
+      to: '/app/kookboek/nieuw',
+      done: items.some((item) => item.kind === 'recipe' && item.isOwner),
+    },
+    {
+      label: 'Vind een collega-chef',
+      description: 'Volg iemand en vul je persoonlijke feed.',
+      action: 'Chefs ontdekken',
+      to: '/app/chefs',
+      done: (followingCount ?? 0) > 0,
+    },
+    {
+      label: 'Log je eerste BBQ-moment',
+      description: 'Een foto en een korte tekst zijn al genoeg.',
+      action: 'Moment loggen',
+      to: '/app/moment/nieuw',
+      done: items.some((item) => item.kind === 'moment' && item.isOwner),
+    },
+  ]
+  const showOnboarding =
+    !onboardingHidden &&
+    (!onboardingSteps.every((step) => step.done) || !onboardingCompleted)
+
+  function hideOnboarding() {
+    if (!user) return
+    const tomorrow = Date.now() + 24 * 60 * 60 * 1000
+    localStorage.setItem(`bbqheros:onboarding-hidden:${user.id}`, String(tomorrow))
+    setOnboardingHidden(true)
+  }
+
+  function completeOnboarding() {
+    if (!user) return
+    localStorage.setItem(`bbqheros:onboarding-completed:${user.id}`, 'true')
+    setOnboardingCompleted(true)
+  }
 
   const feedColumn =
     items.length === 0 ? (
@@ -481,11 +663,31 @@ export default function Feed() {
 
   return (
     <div>
+      {showOnboarding && (
+        <div className="lg:hidden mb-6">
+          <OnboardingCard
+            steps={onboardingSteps}
+            onHide={hideOnboarding}
+            onComplete={completeOnboarding}
+          />
+        </div>
+      )}
       <div className="lg:hidden mb-6">
         <StatsCard stats={stats} />
       </div>
       <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
-        <div>{feedColumn}</div>
+        <div>
+          {showOnboarding && (
+            <div className="hidden lg:block mb-6">
+              <OnboardingCard
+                steps={onboardingSteps}
+                onHide={hideOnboarding}
+                onComplete={completeOnboarding}
+              />
+            </div>
+          )}
+          {feedColumn}
+        </div>
         <div className="hidden lg:flex flex-col gap-6">
           <StatsCard stats={stats} />
           <SuggestedChefs chefs={suggested} />
