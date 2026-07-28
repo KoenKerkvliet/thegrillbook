@@ -5,6 +5,12 @@ import { useAuth } from '../../lib/auth/useAuth'
 import { RecipeCard, type RecipeCardData } from '../../components/RecipeCard'
 import { extractYoutubeId, getYoutubeThumbnail } from '../../lib/youtube'
 import { relativeTime } from '../../lib/relativeTime'
+import {
+  BBQ_TYPES,
+  DIFFICULTIES,
+  MAIN_INGREDIENTS,
+  RECIPE_TECHNIQUES,
+} from '../../lib/discoveryOptions'
 import type { Tables } from '../../types/database'
 
 type Tutorial = {
@@ -182,16 +188,31 @@ const SORT_LABELS: Record<SortOption, string> = {
 
 export default function Kookboek() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<'recepten' | 'tutorials' | 'aantekeningen'>('recepten')
+  const [tab, setTab] = useState<'recepten' | 'ontdekken' | 'tutorials' | 'aantekeningen'>(
+    'recepten',
+  )
   const [recipes, setRecipes] = useState<RecipeCardData[] | null>(null)
+  const [discoveryRecipes, setDiscoveryRecipes] = useState<RecipeCardData[] | null>(null)
   const [tutorials, setTutorials] = useState<Tutorial[] | null>(null)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortOption>('nieuwste')
+  const [ingredientFilter, setIngredientFilter] = useState('')
+  const [techniqueFilter, setTechniqueFilter] = useState('')
+  const [bbqTypeFilter, setBbqTypeFilter] = useState('')
+  const [difficultyFilter, setDifficultyFilter] = useState('')
 
   const filteredRecipes = useMemo(() => {
-    if (!recipes) return null
+    const source = tab === 'ontdekken' ? discoveryRecipes : recipes
+    if (!source) return null
     const q = query.trim().toLowerCase()
-    const list = q ? recipes.filter((r) => r.title.toLowerCase().includes(q)) : [...recipes]
+    const list = source.filter((recipe) => {
+      if (q && !recipe.title.toLowerCase().includes(q)) return false
+      if (ingredientFilter && recipe.main_ingredient !== ingredientFilter) return false
+      if (techniqueFilter && recipe.technique !== techniqueFilter) return false
+      if (bbqTypeFilter && recipe.bbq_type !== bbqTypeFilter) return false
+      if (difficultyFilter && recipe.difficulty !== difficultyFilter) return false
+      return true
+    })
     if (sort === 'rating') {
       list.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
     } else if (sort === 'kooktijd') {
@@ -203,7 +224,17 @@ export default function Kookboek() {
     }
     // 'nieuwste' keeps the created_at-desc order the query already fetched in.
     return list
-  }, [recipes, query, sort])
+  }, [
+    recipes,
+    discoveryRecipes,
+    tab,
+    query,
+    sort,
+    ingredientFilter,
+    techniqueFilter,
+    bbqTypeFilter,
+    difficultyFilter,
+  ])
 
   useEffect(() => {
     if (!user) return
@@ -212,7 +243,7 @@ export default function Kookboek() {
     supabase
       .from('recipes')
       .select(
-        'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username',
+        'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username, main_ingredient, technique, bbq_type, difficulty',
       )
       .eq('owner_id', user.id)
       .order('created_at', { ascending: false })
@@ -230,6 +261,26 @@ export default function Kookboek() {
       .then(({ data }) => {
         if (cancelled) return
         setTutorials(data ?? [])
+      })
+
+    supabase
+      .from('recipes')
+      .select(
+        'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username, main_ingredient, technique, bbq_type, difficulty, profiles!recipes_owner_id_fkey(username)',
+      )
+      .eq('is_public', true)
+      .neq('owner_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (cancelled) return
+        setDiscoveryRecipes(
+          (data ?? [])
+            .filter((recipe) => recipe.profiles?.username !== 'admin')
+            .map(({ profiles, ...recipe }) => ({
+              ...recipe,
+              ownerUsername: profiles?.username,
+            })),
+        )
       })
 
     return () => {
@@ -250,6 +301,17 @@ export default function Kookboek() {
       </div>
 
       <div className="flex gap-1 border-b border-line mb-6">
+        <button
+          type="button"
+          onClick={() => setTab('ontdekken')}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            tab === 'ontdekken'
+              ? 'border-flame text-cream'
+              : 'border-transparent text-cream/50 hover:text-cream'
+          }`}
+        >
+          Ontdekken {discoveryRecipes && `(${discoveryRecipes.length})`}
+        </button>
         <button
           type="button"
           onClick={() => setTab('recepten')}
@@ -285,20 +347,27 @@ export default function Kookboek() {
         </button>
       </div>
 
-      {tab === 'recepten' && (
+      {(tab === 'recepten' || tab === 'ontdekken') && (
         <>
-          {recipes === null && <p className="text-cream/50">Laden...</p>}
-          {recipes?.length === 0 && (
-            <p className="text-cream/60">Nog niks gelogd. Tijd om iets op het vuur te gooien.</p>
+          {(tab === 'recepten' ? recipes : discoveryRecipes) === null && (
+            <p className="text-cream/50">Laden...</p>
           )}
-          {recipes && recipes.length > 0 && (
+          {(tab === 'recepten' ? recipes : discoveryRecipes)?.length === 0 && (
+            <p className="text-cream/60">
+              {tab === 'recepten'
+                ? 'Nog niks gelogd. Tijd om iets op het vuur te gooien.'
+                : 'Er zijn nog geen openbare recepten om te ontdekken.'}
+            </p>
+          )}
+          {(tab === 'recepten' ? recipes : discoveryRecipes) &&
+            (tab === 'recepten' ? recipes : discoveryRecipes)!.length > 0 && (
             <>
-              <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Zoek op titel..."
-                  className="flex-1 rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+                  className="lg:col-span-2 rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
                 />
                 <select
                   value={sort}
@@ -311,10 +380,65 @@ export default function Kookboek() {
                     </option>
                   ))}
                 </select>
+                <select
+                  value={ingredientFilter}
+                  onChange={(e) => setIngredientFilter(e.target.value)}
+                  className="rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm"
+                >
+                  <option value="">Alle ingrediënten</option>
+                  {Object.entries(MAIN_INGREDIENTS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <select
+                  value={techniqueFilter}
+                  onChange={(e) => setTechniqueFilter(e.target.value)}
+                  className="rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm"
+                >
+                  <option value="">Alle technieken</option>
+                  {Object.entries(RECIPE_TECHNIQUES).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <select
+                  value={bbqTypeFilter}
+                  onChange={(e) => setBbqTypeFilter(e.target.value)}
+                  className="rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm"
+                >
+                  <option value="">Alle BBQ-types</option>
+                  {Object.entries(BBQ_TYPES).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <select
+                  value={difficultyFilter}
+                  onChange={(e) => setDifficultyFilter(e.target.value)}
+                  className="rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm"
+                >
+                  <option value="">Alle niveaus</option>
+                  {Object.entries(DIFFICULTIES).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
               </div>
 
               {filteredRecipes?.length === 0 && (
-                <p className="text-cream/50 text-sm">Niets gevonden voor "{query}".</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-cream/50 text-sm">Geen recepten gevonden met deze filters.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery('')
+                      setIngredientFilter('')
+                      setTechniqueFilter('')
+                      setBbqTypeFilter('')
+                      setDifficultyFilter('')
+                    }}
+                    className="text-sm text-flame hover:underline"
+                  >
+                    Wis filters
+                  </button>
+                </div>
               )}
               {filteredRecipes && filteredRecipes.length > 0 && (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

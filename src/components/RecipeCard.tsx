@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { StarRating } from './StarRating'
 import { MailRecipeButton } from './MailRecipeButton'
+import { DIFFICULTIES, RECIPE_TECHNIQUES } from '../lib/discoveryOptions'
 
 export type RecipeCardData = {
   id: string
@@ -12,6 +13,10 @@ export type RecipeCardData = {
   is_public: boolean
   ownerUsername?: string
   original_owner_username?: string | null
+  main_ingredient?: string
+  technique?: string
+  bbq_type?: string
+  difficulty?: string
 }
 
 export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
@@ -39,6 +44,21 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
             {recipe.cook_time_minutes != null && <span>{recipe.cook_time_minutes}min</span>}
             {recipe.servings != null && <span>{recipe.servings} pers.</span>}
           </div>
+          {(recipe.technique || recipe.difficulty) && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {recipe.technique && (
+                <span className="text-[10px] rounded-full bg-flame/10 text-orange px-2 py-0.5">
+                  {RECIPE_TECHNIQUES[recipe.technique as keyof typeof RECIPE_TECHNIQUES] ??
+                    recipe.technique}
+                </span>
+              )}
+              {recipe.difficulty && (
+                <span className="text-[10px] rounded-full border border-line text-cream/50 px-2 py-0.5">
+                  {DIFFICULTIES[recipe.difficulty as keyof typeof DIFFICULTIES] ?? recipe.difficulty}
+                </span>
+              )}
+            </div>
+          )}
           {recipe.original_owner_username && (
             <p className="text-[11px] text-cream/40 mt-2">
               Origineel van @{recipe.original_owner_username}

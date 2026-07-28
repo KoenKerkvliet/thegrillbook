@@ -226,7 +226,9 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
+          favorite_techniques: string[]
           id: string
+          specialties: string[]
           username: string
         }
         Insert: {
@@ -235,7 +237,9 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_techniques?: string[]
           id: string
+          specialties?: string[]
           username: string
         }
         Update: {
@@ -244,7 +248,9 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_techniques?: string[]
           id?: string
+          specialties?: string[]
           username?: string
         }
         Relationships: []
@@ -424,53 +430,65 @@ export type Database = {
       }
       recipes: {
         Row: {
+          bbq_type: string
           cook_time_minutes: number | null
           cover_photo_url: string | null
           created_at: string
           description: string | null
+          difficulty: string
           forked_from_recipe_id: string | null
           id: string
           is_public: boolean
+          main_ingredient: string
           original_owner_display_name: string | null
           original_owner_username: string | null
           owner_id: string
           rating: number | null
           servings: number | null
           title: string
+          technique: string
           updated_at: string
           youtube_url: string | null
         }
         Insert: {
+          bbq_type?: string
           cook_time_minutes?: number | null
           cover_photo_url?: string | null
           created_at?: string
           description?: string | null
+          difficulty?: string
           forked_from_recipe_id?: string | null
           id?: string
           is_public?: boolean
+          main_ingredient?: string
           original_owner_display_name?: string | null
           original_owner_username?: string | null
           owner_id: string
           rating?: number | null
           servings?: number | null
           title: string
+          technique?: string
           updated_at?: string
           youtube_url?: string | null
         }
         Update: {
+          bbq_type?: string
           cook_time_minutes?: number | null
           cover_photo_url?: string | null
           created_at?: string
           description?: string | null
+          difficulty?: string
           forked_from_recipe_id?: string | null
           id?: string
           is_public?: boolean
+          main_ingredient?: string
           original_owner_display_name?: string | null
           original_owner_username?: string | null
           owner_id?: string
           rating?: number | null
           servings?: number | null
           title?: string
+          technique?: string
           updated_at?: string
           youtube_url?: string | null
         }
@@ -613,6 +631,19 @@ export type Database = {
         Returns: {
           points: number
           user_id: string
+        }[]
+      }
+      get_chef_stats: {
+        Args: { target_user_id: string }
+        Returns: {
+          average_rating: number | null
+          followers: number
+          following: number
+          moments: number
+          recipe_likes: number
+          recipes: number
+          saves: number
+          videos: number
         }[]
       }
       get_chef_streak: { Args: { target_user_id: string }; Returns: number }

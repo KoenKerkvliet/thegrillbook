@@ -5,15 +5,55 @@ import { useAuth } from '../../lib/auth/useAuth'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
 import { RankBadge } from '../../components/RankBadge'
 import { StreakBadge } from '../../components/StreakBadge'
+import { CHEF_SPECIALTIES, CHEF_TECHNIQUES } from '../../lib/discoveryOptions'
 import type { Tables } from '../../types/database'
 
 type HardwareItem = Tables<'hardware_items'>
+
+function ChoicePills({
+  options,
+  selected,
+  onChange,
+}: {
+  options: readonly string[]
+  selected: string[]
+  onChange: (values: string[]) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const active = selected.includes(option)
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() =>
+              onChange(active ? selected.filter((value) => value !== option) : [...selected, option])
+            }
+            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+              active
+                ? 'border-flame bg-flame/10 text-flame'
+                : 'border-line bg-surface text-cream/60 hover:text-cream'
+            }`}
+            aria-pressed={active}
+          >
+            {option}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 export default function Profile() {
   const { user, profile, refreshProfile, signOut } = useAuth()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [bio, setBio] = useState(profile?.bio ?? '')
+  const [specialties, setSpecialties] = useState<string[]>(profile?.specialties ?? [])
+  const [favoriteTechniques, setFavoriteTechniques] = useState<string[]>(
+    profile?.favorite_techniques ?? [],
+  )
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -100,6 +140,8 @@ export default function Profile() {
         display_name: displayName || null,
         bio: bio || null,
         avatar_url: avatarUrl,
+        specialties,
+        favorite_techniques: favoriteTechniques,
       })
       .eq('id', user.id)
     await refreshProfile()
@@ -202,6 +244,24 @@ export default function Profile() {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+          />
+        </div>
+
+        <div>
+          <p className="text-sm text-cream/60 mb-2">Mijn specialiteiten</p>
+          <ChoicePills
+            options={CHEF_SPECIALTIES}
+            selected={specialties}
+            onChange={setSpecialties}
+          />
+        </div>
+
+        <div>
+          <p className="text-sm text-cream/60 mb-2">Favoriete technieken</p>
+          <ChoicePills
+            options={CHEF_TECHNIQUES}
+            selected={favoriteTechniques}
+            onChange={setFavoriteTechniques}
           />
         </div>
 

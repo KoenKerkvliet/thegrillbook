@@ -15,8 +15,13 @@ type Profile = Tables<'profiles'>
 
 type Stats = {
   recipes: number
-  privateRecipes: number
+  moments: number
+  videos: number
+  receivedLikes: number
+  saves: number
   followers: number
+  following: number
+  averageRating: number | null
   points: number
   streak: number
 }
@@ -89,16 +94,23 @@ function StatsCard({ stats }: { stats: Stats | null }) {
       </div>
       <div className={`${mobileExpanded ? 'flex' : 'hidden'} lg:flex flex-col gap-3`}>
         <div className="border-t border-line" />
-      {[
-        ['Recepten', stats.recipes],
-        ['Privé', stats.privateRecipes],
-        ['Volgers', stats.followers],
-      ].map(([label, value]) => (
-        <div key={label} className="flex items-baseline justify-between">
-          <span className="text-sm text-cream/70">{label}</span>
-          <span className="font-display text-2xl">{value}</span>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+          {[
+            ['Recepten', stats.recipes],
+            ['Momenten', stats.moments],
+            ['Video’s', stats.videos],
+            ['Likes', stats.receivedLikes],
+            ['Opgeslagen', stats.saves],
+            ['Volgers', stats.followers],
+            ['Volgend', stats.following],
+            ['Gem. score', stats.averageRating == null ? '—' : stats.averageRating.toFixed(1)],
+          ].map(([label, value]) => (
+            <div key={label} className="border-l border-line pl-2">
+              <p className="text-[11px] text-cream/45">{label}</p>
+              <p className="font-display text-xl leading-tight mt-0.5">{value}</p>
+            </div>
+          ))}
         </div>
-        ))}
       </div>
     </div>
   )
@@ -319,27 +331,25 @@ export default function Feed() {
       if (!cancelled) setSuggested((suggestedRows ?? []).filter(isDiscoverableChef))
 
       const [
-        { count: recipeCount },
-        { count: privateCount },
-        { count: followerCount },
+        { data: chefStatsData },
         { data: pointsData },
         { data: streakData },
       ] = await Promise.all([
-        supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('owner_id', user!.id),
-        supabase
-          .from('recipes')
-          .select('id', { count: 'exact', head: true })
-          .eq('owner_id', user!.id)
-          .eq('is_public', false),
-        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', user!.id),
+        supabase.rpc('get_chef_stats', { target_user_id: user!.id }),
         supabase.rpc('get_chef_points', { target_user_id: user!.id }),
         supabase.rpc('get_chef_streak', { target_user_id: user!.id }),
       ])
       if (!cancelled) {
+        const chefStats = chefStatsData?.[0]
         setStats({
-          recipes: recipeCount ?? 0,
-          privateRecipes: privateCount ?? 0,
-          followers: followerCount ?? 0,
+          recipes: chefStats?.recipes ?? 0,
+          moments: chefStats?.moments ?? 0,
+          videos: chefStats?.videos ?? 0,
+          receivedLikes: chefStats?.recipe_likes ?? 0,
+          saves: chefStats?.saves ?? 0,
+          followers: chefStats?.followers ?? 0,
+          following: chefStats?.following ?? 0,
+          averageRating: chefStats?.average_rating ?? null,
           points: pointsData ?? 0,
           streak: streakData ?? 0,
         })

@@ -4,6 +4,12 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { StarRating } from '../../components/StarRating'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
+import {
+  BBQ_TYPES,
+  DIFFICULTIES,
+  MAIN_INGREDIENTS,
+  RECIPE_TECHNIQUES,
+} from '../../lib/discoveryOptions'
 
 function ListEditor({
   label,
@@ -72,6 +78,10 @@ export default function RecipeForm() {
   const [isPublic, setIsPublic] = useState(false)
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null)
   const [youtubeUrl, setYoutubeUrl] = useState('')
+  const [mainIngredient, setMainIngredient] = useState('overig')
+  const [technique, setTechnique] = useState('grillen')
+  const [bbqType, setBbqType] = useState('anders')
+  const [difficulty, setDifficulty] = useState('gemiddeld')
   const [uploading, setUploading] = useState(false)
   const [ingredients, setIngredients] = useState<string[]>([''])
   const [steps, setSteps] = useState<string[]>([''])
@@ -100,6 +110,10 @@ export default function RecipeForm() {
       setIsPublic(recipe.is_public)
       setCoverPhotoUrl(recipe.cover_photo_url)
       setYoutubeUrl(recipe.youtube_url ?? '')
+      setMainIngredient(recipe.main_ingredient)
+      setTechnique(recipe.technique)
+      setBbqType(recipe.bbq_type)
+      setDifficulty(recipe.difficulty)
       setIngredients(ingredientRows?.length ? ingredientRows.map((r) => r.text) : [''])
       setSteps(stepRows?.length ? stepRows.map((r) => r.text) : [''])
       setLoading(false)
@@ -153,6 +167,10 @@ export default function RecipeForm() {
       is_public: isPublic,
       cover_photo_url: coverPhotoUrl,
       youtube_url: youtubeUrl.trim() || null,
+      main_ingredient: mainIngredient,
+      technique,
+      bbq_type: bbqType,
+      difficulty,
     }
 
     const cleanIngredients = ingredients.map((t) => t.trim()).filter(Boolean)
@@ -289,6 +307,60 @@ export default function RecipeForm() {
             onChange={(e) => setServings(e.target.value)}
             className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
           />
+        </div>
+      </div>
+
+      <div>
+        <p className="text-sm text-cream/60 mb-2">Vindbaarheid</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <label className="text-xs text-cream/50">
+            Hoofdingrediënt
+            <select
+              value={mainIngredient}
+              onChange={(e) => setMainIngredient(e.target.value)}
+              className="mt-1 w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm text-cream"
+            >
+              {Object.entries(MAIN_INGREDIENTS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-cream/50">
+            Techniek
+            <select
+              value={technique}
+              onChange={(e) => setTechnique(e.target.value)}
+              className="mt-1 w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm text-cream"
+            >
+              {Object.entries(RECIPE_TECHNIQUES).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-cream/50">
+            BBQ-type
+            <select
+              value={bbqType}
+              onChange={(e) => setBbqType(e.target.value)}
+              className="mt-1 w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm text-cream"
+            >
+              {Object.entries(BBQ_TYPES).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-cream/50">
+            Moeilijkheid
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              className="mt-1 w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame text-sm text-cream"
+            >
+              {Object.entries(DIFFICULTIES).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
         </div>
       </div>
 

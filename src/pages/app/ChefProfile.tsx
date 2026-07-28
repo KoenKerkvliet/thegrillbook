@@ -11,6 +11,12 @@ import type { Tables } from '../../types/database'
 
 type Profile = Tables<'profiles'>
 type HardwareItem = Tables<'hardware_items'>
+type PublicChefStats = {
+  recipes: number
+  moments: number
+  recipe_likes: number
+  followers: number
+}
 
 export default function ChefProfile() {
   const { username } = useParams<{ username: string }>()
@@ -21,6 +27,7 @@ export default function ChefProfile() {
   const [points, setPoints] = useState<number | null>(null)
   const [streak, setStreak] = useState<number | null>(null)
   const [hardware, setHardware] = useState<HardwareItem[]>([])
+  const [stats, setStats] = useState<PublicChefStats | null>(null)
 
   useEffect(() => {
     if (!username || !user) return
@@ -45,11 +52,12 @@ export default function ChefProfile() {
         { data: pointsData },
         { data: streakData },
         { data: hardwareData },
+        { data: statsData },
       ] = await Promise.all([
         supabase
           .from('recipes')
           .select(
-            'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username',
+            'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, original_owner_username, main_ingredient, technique, bbq_type, difficulty',
           )
           .eq('owner_id', profileData.id)
           .order('created_at', { ascending: false }),
@@ -62,6 +70,7 @@ export default function ChefProfile() {
         supabase.rpc('get_chef_points', { target_user_id: profileData.id }),
         supabase.rpc('get_chef_streak', { target_user_id: profileData.id }),
         supabase.from('hardware_items').select('*').eq('owner_id', profileData.id).order('position'),
+        supabase.rpc('get_chef_stats', { target_user_id: profileData.id }),
       ])
 
       if (cancelled) return
@@ -73,6 +82,7 @@ export default function ChefProfile() {
       setPoints(pointsData ?? 0)
       setStreak(streakData ?? 0)
       setHardware(hardwareData ?? [])
+      setStats(statsData?.[0] ?? null)
       setProfile(profileData)
     }
 
@@ -135,6 +145,57 @@ export default function ChefProfile() {
       )}
 
       {profile.bio && <p className="text-cream/70 max-w-xl">{profile.bio}</p>}
+
+      {stats && (
+        <div className="grid grid-cols-4 gap-2 max-w-xl">
+          {[
+            ['Recepten', stats.recipes],
+            ['Momenten', stats.moments],
+            ['Receptlikes', stats.recipe_likes],
+            ['Volgers', stats.followers],
+          ].map(([label, value]) => (
+            <div key={label} className="bg-surface border border-line rounded-md px-3 py-3 text-center">
+              <p className="font-display text-xl">{value}</p>
+              <p className="text-[10px] text-cream/45 mt-0.5">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(profile.specialties.length > 0 || profile.favorite_techniques.length > 0) && (
+        <div className="grid sm:grid-cols-2 gap-6">
+          {profile.specialties.length > 0 && (
+            <div>
+              <h2 className="font-display text-lg mb-3">Specialiteiten</h2>
+              <ul className="flex flex-wrap gap-2">
+                {profile.specialties.map((specialty) => (
+                  <li
+                    key={specialty}
+                    className="text-sm bg-flame/10 border border-flame/25 rounded-full px-3 py-1.5 text-orange"
+                  >
+                    {specialty}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {profile.favorite_techniques.length > 0 && (
+            <div>
+              <h2 className="font-display text-lg mb-3">Favoriete technieken</h2>
+              <ul className="flex flex-wrap gap-2">
+                {profile.favorite_techniques.map((technique) => (
+                  <li
+                    key={technique}
+                    className="text-sm bg-surface border border-line rounded-full px-3 py-1.5 text-cream/80"
+                  >
+                    {technique}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       {hardware.length > 0 && (
         <div>
