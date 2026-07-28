@@ -14,9 +14,11 @@ export function RankBadge({
   return (
     <div>
       <div className="flex items-center gap-2">
-        <span className="text-xl leading-none" aria-hidden="true">
-          {rank.icon}
-        </span>
+        <img
+          src={`${import.meta.env.BASE_URL}${rank.icon}`}
+          alt=""
+          className="w-10 h-10 object-contain shrink-0"
+        />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-cream truncate">{rank.name}</p>
           <p className="text-xs text-cream/50">
@@ -32,8 +34,13 @@ export function RankBadge({
               style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
             />
           </div>
-          <p className="text-[11px] text-cream/40 mt-1">
-            Nog {next.min - points} {next.min - points === 1 ? 'punt' : 'punten'} tot {next.icon}{' '}
+          <p className="text-[11px] text-cream/40 mt-1 flex items-center gap-1">
+            Nog {next.min - points} {next.min - points === 1 ? 'punt' : 'punten'} tot
+            <img
+              src={`${import.meta.env.BASE_URL}${next.icon}`}
+              alt=""
+              className="w-4 h-4 object-contain"
+            />
             {next.name}
           </p>
         </div>

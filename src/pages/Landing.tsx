@@ -150,9 +150,11 @@ function RecipePreviewCard() {
         </div>
       </div>
       <div className="gsap-hero-badge hidden sm:flex absolute -bottom-5 -left-5 items-center gap-2 bg-surface border border-line rounded-md px-4 py-3 shadow-lg">
-        <span className="text-xl leading-none" aria-hidden="true">
-          🍖
-        </span>
+        <img
+          src={`${import.meta.env.BASE_URL}${RANKS[2].icon}`}
+          alt=""
+          className="w-9 h-9 object-contain"
+        />
         <div>
           <p className="text-sm font-semibold text-cream">Corporal of the Coals</p>
           <p className="text-xs text-cream/50">17 punten deze week</p>
@@ -534,16 +536,25 @@ export default function Landing() {
             {RANKS.slice(0, 5).map((rank, i) => (
               <div key={rank.name} className="flex items-center gap-4 sm:gap-6">
                 <div className="gsap-rank-icon flex flex-col items-center gap-2 w-20 text-center">
-                  <span className="text-3xl" aria-hidden="true">
-                    {rank.icon}
-                  </span>
+                  <img
+                    src={`${import.meta.env.BASE_URL}${rank.icon}`}
+                    alt=""
+                    className="w-12 h-12 object-contain"
+                  />
                   <p className="text-xs text-cream/60 leading-tight">{rank.name}</p>
                 </div>
                 {i < 4 && <span className="gsap-rank-arrow text-cream/20 text-xl">→</span>}
               </div>
             ))}
             <span className="gsap-rank-arrow text-cream/20 text-xl">→</span>
-            <p className="gsap-rank-icon text-cream/40 text-sm">... tot BBQ General 🏆</p>
+            <div className="gsap-rank-icon flex items-center gap-2 text-cream/40 text-sm">
+              <img
+                src={`${import.meta.env.BASE_URL}${RANKS[RANKS.length - 1].icon}`}
+                alt=""
+                className="w-10 h-10 object-contain"
+              />
+              <span>... tot BBQ General</span>
+            </div>
           </div>
         </div>
       </section>
