@@ -261,7 +261,7 @@ export default function RecipeDetail() {
                 className="grid grid-cols-[2.5rem_1fr] gap-x-3 break-inside-avoid print:grid-cols-[2rem_1fr]"
               >
                 {step.section && (
-                  <h3 className="col-span-2 mt-6 mb-3 font-display text-lg uppercase tracking-wide text-flame first:mt-2">
+                  <h3 className="col-span-2 mt-4 mb-2 font-display text-lg uppercase tracking-wide text-flame first:mt-2">
                     {step.section}
                   </h3>
                 )}
@@ -273,7 +273,7 @@ export default function RecipeDetail() {
                     <span className="my-2 w-px flex-1 min-h-5 border-l border-dashed border-cream/25 print:border-black/40" />
                   )}
                 </div>
-                <p className="pb-5 pt-1 leading-relaxed">{step.text}</p>
+                <p className="pb-3 pt-1 leading-relaxed">{step.text}</p>
               </li>
             ))}
           </ol>
