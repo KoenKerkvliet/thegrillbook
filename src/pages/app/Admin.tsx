@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { isAdminEmail } from '../../lib/admin'
@@ -343,7 +343,9 @@ function UserCard(props: UserActionsProps) {
 
 export default function Admin() {
   const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
   const admin = isAdminEmail(user?.email)
+  const adminView = searchParams.get('view') === 'feedback' ? 'feedback' : 'users'
   const [users, setUsers] = useState<AdminUser[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -493,6 +495,33 @@ export default function Admin() {
       {error && <p className="text-sm text-flame">{error}</p>}
       {notice && <p className="text-sm text-cream/60">{notice}</p>}
 
+      <div className="flex items-center gap-2 border-b border-line">
+        <button
+          type="button"
+          onClick={() => setSearchParams({})}
+          className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            adminView === 'users'
+              ? 'border-flame text-cream'
+              : 'border-transparent text-cream/50 hover:text-cream'
+          }`}
+        >
+          Gebruikers
+        </button>
+        <button
+          type="button"
+          onClick={() => setSearchParams({ view: 'feedback' })}
+          className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            adminView === 'feedback'
+              ? 'border-flame text-cream'
+              : 'border-transparent text-cream/50 hover:text-cream'
+          }`}
+        >
+          Ideeënbus
+        </button>
+      </div>
+
+      {adminView === 'users' ? (
+        <>
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           {(
@@ -511,8 +540,6 @@ export default function Admin() {
           ))}
         </div>
       )}
-
-      <AdminFeedback />
 
       <div className="flex items-center gap-2 border-b border-line">
         {(
@@ -636,6 +663,10 @@ export default function Admin() {
             </p>
           )}
         </>
+      )}
+        </>
+      ) : (
+        <AdminFeedback />
       )}
     </div>
   )
