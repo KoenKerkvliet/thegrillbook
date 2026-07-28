@@ -363,7 +363,6 @@ export default function Profile() {
             id="deleteConfirm"
             value={deleteConfirmText}
             onChange={(e) => setDeleteConfirmText(e.target.value)}
-            placeholder={profile?.username}
             className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
           />
           {deleteError && <p className="text-sm text-flame">{deleteError}</p>}

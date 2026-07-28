@@ -97,7 +97,6 @@ export default function Signup() {
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
               className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-              placeholder="bbq_koen"
             />
           </div>
           <div>
@@ -110,7 +109,6 @@ export default function Signup() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
-              placeholder="Koen"
             />
           </div>
           <div>
