@@ -118,8 +118,8 @@ select
   'Welkom bij BBQHeros',
   'Jouw persoonlijke BBQ-kookboek én de plek om samen beter te leren barbecueën. Bewaar recepten, log je mooiste BBQ-momenten, verzamel handige tutorials en volg chefs die je inspireren. Begin op jouw tempo en bouw grill voor grill aan je eigen BBQ-verhaal.',
   'https://bbqheros.nl/images/editorial/welcome-bbqheros.webp',
-  'Start met je profiel',
-  '/app/profiel',
+  null,
+  null,
   'none'
 from public.profiles
 where username = 'bbqheros' and is_official;
