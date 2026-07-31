@@ -1,8 +1,9 @@
 {
+  "id": "/",
   "name": "BBQHeros",
   "short_name": "BBQHeros",
   "description": "Log je eigen BBQ-recepten, hou ze privé of deel ze met je collega chefs.",
-  "start_url": "/",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0B0B0B",
