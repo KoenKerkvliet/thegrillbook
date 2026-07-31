@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../lib/auth/useAuth'
 import { Logo } from '../components/Logo'
 
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -13,6 +15,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   const from = (location.state as { from?: string } | null)?.from ?? '/app'
+
+  if (!authLoading && user) {
+    return <Navigate to={from} replace />
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
