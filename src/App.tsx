@@ -34,13 +34,35 @@ function AppIndex() {
   return isAdminEmail(user?.email) ? <Navigate to="/app/admin" replace /> : <Feed />
 }
 
+function HomeRoute() {
+  const { user, loading } = useAuth()
+  const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean }
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    navigatorWithStandalone.standalone === true
+
+  if (isStandalone && loading) {
+    return (
+      <div className="min-h-svh flex items-center justify-center bg-ink text-cream">
+        Laden...
+      </div>
+    )
+  }
+
+  if (isStandalone && user) {
+    return <Navigate to="/app" replace />
+  }
+
+  return <Landing />
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
           <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<HomeRoute />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/voorwaarden" element={<Voorwaarden />} />
           <Route path="/login" element={<Login />} />
