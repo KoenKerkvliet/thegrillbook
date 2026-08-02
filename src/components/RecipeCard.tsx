@@ -18,6 +18,7 @@ export type RecipeCardData = {
   technique?: string
   bbq_type?: string
   difficulty?: string
+  import_status?: string
 }
 
 export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
@@ -59,6 +60,11 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
                 </span>
               )}
             </div>
+          )}
+          {recipe.import_status === 'draft' && (
+            <span className="inline-block mb-2 text-[10px] font-semibold tracking-widest uppercase text-flame">
+              Concept · nalopen
+            </span>
           )}
           {recipe.original_owner_username && (
             <p className="text-[11px] text-cream/40 mt-2">
