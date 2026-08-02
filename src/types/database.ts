@@ -330,6 +330,7 @@ export type Database = {
           id: string
           owner_id: string
           photo_url: string | null
+          source_recipe_id: string | null
         }
         Insert: {
           caption?: string | null
@@ -337,6 +338,7 @@ export type Database = {
           id?: string
           owner_id: string
           photo_url?: string | null
+          source_recipe_id?: string | null
         }
         Update: {
           caption?: string | null
@@ -344,8 +346,16 @@ export type Database = {
           id?: string
           owner_id?: string
           photo_url?: string | null
+          source_recipe_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "moments_source_recipe_id_fkey"
+            columns: ["source_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "moments_owner_id_fkey"
             columns: ["owner_id"]
