@@ -640,6 +640,8 @@ export type Database = {
           grill_temperature_c: number | null
           id: string
           is_public: boolean
+          import_source_url: string | null
+          import_status: string
           main_ingredient: string
           original_owner_display_name: string | null
           original_owner_username: string | null
@@ -664,6 +666,8 @@ export type Database = {
           grill_temperature_c?: number | null
           id?: string
           is_public?: boolean
+          import_source_url?: string | null
+          import_status?: string
           main_ingredient?: string
           original_owner_display_name?: string | null
           original_owner_username?: string | null
@@ -688,6 +692,8 @@ export type Database = {
           grill_temperature_c?: number | null
           id?: string
           is_public?: boolean
+          import_source_url?: string | null
+          import_status?: string
           main_ingredient?: string
           original_owner_display_name?: string | null
           original_owner_username?: string | null
