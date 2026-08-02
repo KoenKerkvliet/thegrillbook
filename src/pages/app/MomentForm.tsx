@@ -1,17 +1,36 @@
-import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { resizeAndConvertToWebp } from '../../lib/imageProcessing'
 
 export default function MomentForm() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const sourceRecipeId = searchParams.get('recept')
+  const [sourceRecipeTitle, setSourceRecipeTitle] = useState<string | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!sourceRecipeId) return
+    let active = true
+    supabase
+      .from('recipes')
+      .select('title')
+      .eq('id', sourceRecipeId)
+      .single()
+      .then(({ data }) => {
+        if (active) setSourceRecipeTitle(data?.title ?? null)
+      })
+    return () => {
+      active = false
+    }
+  }, [sourceRecipeId])
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -47,7 +66,12 @@ export default function MomentForm() {
     setSaving(true)
     const { error } = await supabase
       .from('moments')
-      .insert({ owner_id: user.id, photo_url: photoUrl, caption: caption.trim() || null })
+      .insert({
+        owner_id: user.id,
+        photo_url: photoUrl,
+        caption: caption.trim() || null,
+        source_recipe_id: sourceRecipeId,
+      })
     setSaving(false)
     if (error) {
       setError('Opslaan mislukt.')
@@ -88,6 +112,11 @@ export default function MomentForm() {
     <form onSubmit={handleSubmit} className="max-w-md flex flex-col gap-6">
       <div>
         <h1 className="font-display text-3xl mb-2">Vuur aan?</h1>
+        {sourceRecipeId && (
+          <p className="mb-2 text-sm text-flame">
+            Je logt dat je {sourceRecipeTitle ? `“${sourceRecipeTitle}”` : 'dit recept'} hebt gemaakt.
+          </p>
+        )}
         <p className="text-cream/60 text-sm">
           Geen volledig recept nodig — laat je collega chefs gewoon zien dat de BBQ aan staat.
         </p>
