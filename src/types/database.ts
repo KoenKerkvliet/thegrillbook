@@ -627,6 +627,7 @@ export type Database = {
           description: string | null
           difficulty: string
           forked_from_recipe_id: string | null
+          grill_temperature_c: number | null
           id: string
           is_public: boolean
           main_ingredient: string
@@ -637,6 +638,7 @@ export type Database = {
           servings: number | null
           title: string
           technique: string
+          target_temperature_c: number | null
           updated_at: string
           visibility: string
           youtube_url: string | null
@@ -649,6 +651,7 @@ export type Database = {
           description?: string | null
           difficulty?: string
           forked_from_recipe_id?: string | null
+          grill_temperature_c?: number | null
           id?: string
           is_public?: boolean
           main_ingredient?: string
@@ -659,6 +662,7 @@ export type Database = {
           servings?: number | null
           title: string
           technique?: string
+          target_temperature_c?: number | null
           updated_at?: string
           visibility?: string
           youtube_url?: string | null
@@ -671,6 +675,7 @@ export type Database = {
           description?: string | null
           difficulty?: string
           forked_from_recipe_id?: string | null
+          grill_temperature_c?: number | null
           id?: string
           is_public?: boolean
           main_ingredient?: string
@@ -681,6 +686,7 @@ export type Database = {
           servings?: number | null
           title?: string
           technique?: string
+          target_temperature_c?: number | null
           updated_at?: string
           visibility?: string
           youtube_url?: string | null
