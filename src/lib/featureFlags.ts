@@ -12,7 +12,7 @@ export function useFeatureFlag(key: string) {
     db.from('app_feature_flags').select('is_enabled').eq('key', key).maybeSingle()
       .then(({ data }: any) => {
         if (!cancelled) {
-          setEnabled(Boolean(data?.is_enabled))
+          setEnabled(data?.is_enabled === true)
           setLoaded(true)
         }
       })
