@@ -58,7 +58,8 @@ function MobileNavIcon({ name }: { name: string }) {
 
 function SidebarNav() {
   const { user } = useAuth()
-  const links = isAdminEmail(user?.email) ? ADMIN_LINKS : NAV_LINKS
+  const { enabled: leaderboardEnabled } = useFeatureFlag('leaderboard')
+  const links = isAdminEmail(user?.email) ? ADMIN_LINKS : NAV_LINKS.filter((link) => leaderboardEnabled || link.to !== '/app/leaderboard')
 
   return (
     <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
@@ -84,7 +85,8 @@ function SidebarNav() {
 
 function MobileBottomNav() {
   const { user } = useAuth()
-  const links = isAdminEmail(user?.email) ? ADMIN_LINKS : NAV_LINKS
+  const { enabled: leaderboardEnabled } = useFeatureFlag('leaderboard')
+  const links = isAdminEmail(user?.email) ? ADMIN_LINKS : NAV_LINKS.filter((link) => leaderboardEnabled || link.to !== '/app/leaderboard')
 
   return (
     <nav
