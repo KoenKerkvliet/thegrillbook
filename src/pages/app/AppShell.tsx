@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { startOfThisWeek } from '../../lib/relativeTime'
 import { isAdminEmail } from '../../lib/admin'
 import { NotificationBell } from '../../components/NotificationBell'
+import { useFeatureFlag } from '../../lib/featureFlags'
 
 const NAV_LINKS = [
   { to: '/app', label: 'Feed', end: true },
@@ -151,6 +152,8 @@ function WeekWidget() {
 }
 
 function LeaderboardWidget() {
+  const { enabled } = useFeatureFlag('leaderboard')
+  if (!enabled) return null
   return (
     <NavLink
       to="/app/leaderboard"
