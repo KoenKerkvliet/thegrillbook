@@ -9,6 +9,7 @@ import { NotificationBell } from '../../components/NotificationBell'
 
 const NAV_LINKS = [
   { to: '/app', label: 'Feed', end: true },
+  { to: '/app/ontdekken', label: 'Ontdekken', end: false },
   { to: '/app/kookboek', label: 'Mijn kookboek', end: false },
   { to: '/app/chefs', label: 'Collega chefs', end: false },
   { to: '/app/leaderboard', label: 'Leaderboard', end: false },
@@ -38,6 +39,9 @@ function MobileNavIcon({ name }: { name: string }) {
   }
   if (name === 'Mijn kookboek') {
     return <svg {...common}><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z" /><path d="M5 4.5v17M9 6h7" /></svg>
+  }
+  if (name === 'Ontdekken') {
+    return <svg {...common}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4M11 8v6M8 11h6" /></svg>
   }
   if (name === 'Collega chefs') {
     return <svg {...common}><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.5-3.2 2.3-5 5.5-5s5 1.8 5.5 5M16 6.5a3 3 0 0 1 0 5.8M16.5 14c2.5.4 3.8 2 4 4.5" /></svg>
@@ -86,7 +90,7 @@ function MobileBottomNav() {
       className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/95 backdrop-blur-md"
       aria-label="Hoofdnavigatie"
     >
-      <div className={`grid ${links.length === 2 ? 'grid-cols-2' : 'grid-cols-5'} px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))]`}>
+      <div className={`grid ${links.length === 2 ? 'grid-cols-2' : links.length === 6 ? 'grid-cols-6' : 'grid-cols-5'} px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))`}>
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -156,7 +160,7 @@ function LeaderboardWidget() {
         MAANDRANGLIJST
       </p>
       <p className="text-xs mt-1 text-cream/50">Bekijk jouw positie tussen de chefs die je volgt.</p>
-      <span className="inline-block text-xs font-semibold text-flame mt-3">Bekijk leaderboard →</span>
+      <span className="inline-block text-xs font-semibold text-flame mt-3">Bekijk leaderboard â†’</span>
     </NavLink>
   )
 }
@@ -195,14 +199,14 @@ function NewMenu() {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2"
           >
-            🔥 BBQ moment loggen
+            ðŸ”¥ BBQ moment loggen
           </NavLink>
           <NavLink
             to="/app/video/nieuw"
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
           >
-            📺 Video delen
+            ðŸ“º Video delen
           </NavLink>
           <NavLink
             to="/app/kookboek/nieuw"
@@ -267,7 +271,7 @@ function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
           >
-            Feedback & ideeën
+            Feedback & ideeÃ«n
           </NavLink>
           <button
             type="button"
@@ -312,13 +316,13 @@ export default function AppShell() {
                   to="/app/moment/nieuw"
                   className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
                 >
-                  🔥 Vuur aan
+                  ðŸ”¥ Vuur aan
                 </NavLink>
                 <NavLink
                   to="/app/video/nieuw"
                   className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
                 >
-                  📺 Video
+                  ðŸ“º Video
                 </NavLink>
                 <NavLink
                   to="/app/kookboek/nieuw"
