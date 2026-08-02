@@ -6,6 +6,7 @@ import { StarRating } from '../../components/StarRating'
 import { LikeButton } from '../../components/LikeButton'
 import { MailRecipeButton } from '../../components/MailRecipeButton'
 import { extractYoutubeId } from '../../lib/youtube'
+import { BBQ_TYPES, RECIPE_TECHNIQUES } from '../../lib/discoveryOptions'
 import type { Tables } from '../../types/database'
 
 type Recipe = Tables<'recipes'> & { profiles: { username: string; display_name: string | null } | null }
@@ -210,6 +211,32 @@ export default function RecipeDetail() {
         </button>
       </div>
 
+      <section className="mb-6 rounded-lg border border-line bg-surface/40 p-4">
+        <h2 className="font-display text-xl mb-3">Op het vuur</h2>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
+          <div>
+            <dt className="text-xs text-cream/45">BBQ-type</dt>
+            <dd className="mt-0.5 text-cream/85">{BBQ_TYPES[recipe.bbq_type as keyof typeof BBQ_TYPES] ?? recipe.bbq_type}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-cream/45">Techniek</dt>
+            <dd className="mt-0.5 text-cream/85">{RECIPE_TECHNIQUES[recipe.technique as keyof typeof RECIPE_TECHNIQUES] ?? recipe.technique}</dd>
+          </div>
+          {recipe.grill_temperature_c != null && (
+            <div>
+              <dt className="text-xs text-cream/45">BBQ / smoker</dt>
+              <dd className="mt-0.5 text-cream/85">{recipe.grill_temperature_c}°C</dd>
+            </div>
+          )}
+          {recipe.target_temperature_c != null && (
+            <div>
+              <dt className="text-xs text-cream/45">Kerntemperatuur</dt>
+              <dd className="mt-0.5 text-cream/85">{recipe.target_temperature_c}°C</dd>
+            </div>
+          )}
+        </dl>
+      </section>
+
       {ingredients.length > 0 && (
         <section className="mb-6">
           <div className="flex items-center justify-between gap-4 mb-2">
@@ -311,13 +338,13 @@ export default function RecipeDetail() {
 
       {isOwner && (
         <section className="print:hidden mt-8 border-t border-line pt-6">
-          <h2 className="font-display text-xl mb-3">Mijn notities</h2>
-          <p className="text-xs text-cream/40 mb-3">Alleen jij ziet dit, ook als het recept openbaar is.</p>
+          <h2 className="font-display text-xl mb-1">Volgende keer</h2>
+          <p className="text-xs text-cream/40 mb-3">Jouw persoonlijke leerpunten. Alleen jij ziet dit, ook als het recept openbaar is.</p>
           <form onSubmit={handleAddNote} className="flex gap-2 mb-4">
             <input
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Volgende keer minder zout..."
+              placeholder="Bijvoorbeeld: 10°C lager garen en iets minder zout..."
               className="flex-1 rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
             />
             <button
