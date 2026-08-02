@@ -158,6 +158,8 @@ export default function RecipeForm() {
   const [description, setDescription] = useState('')
   const [cookTimeMinutes, setCookTimeMinutes] = useState('')
   const [servings, setServings] = useState('')
+  const [grillTemperature, setGrillTemperature] = useState('')
+  const [targetTemperature, setTargetTemperature] = useState('')
   const [rating, setRating] = useState(0)
   const [visibility, setVisibility] = useState<RecipeVisibility>('private')
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null)
@@ -190,6 +192,8 @@ export default function RecipeForm() {
       setDescription(recipe.description ?? '')
       setCookTimeMinutes(recipe.cook_time_minutes?.toString() ?? '')
       setServings(recipe.servings?.toString() ?? '')
+      setGrillTemperature(recipe.grill_temperature_c?.toString() ?? '')
+      setTargetTemperature(recipe.target_temperature_c?.toString() ?? '')
       setRating(recipe.rating ?? 0)
       setVisibility((recipe.visibility ?? (recipe.is_public ? 'followers' : 'private')) as RecipeVisibility)
       setCoverPhotoUrl(recipe.cover_photo_url)
@@ -251,6 +255,8 @@ export default function RecipeForm() {
       description: description.trim() || null,
       cook_time_minutes: cookTimeMinutes ? Number(cookTimeMinutes) : null,
       servings: servings ? Number(servings) : null,
+      grill_temperature_c: grillTemperature ? Number(grillTemperature) : null,
+      target_temperature_c: targetTemperature ? Number(targetTemperature) : null,
       rating: rating || null,
       is_public: visibility !== 'private',
       visibility,
@@ -405,6 +411,45 @@ export default function RecipeForm() {
           />
         </div>
       </div>
+
+      <fieldset className="rounded-lg border border-line bg-surface/40 p-4">
+        <legend className="px-1 text-sm text-cream/60">Temperaturen</legend>
+        <p className="mb-3 text-xs text-cream/40">
+          Handig voor de volgende keer. Laat leeg als het niet relevant is.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-cream/60 mb-1" htmlFor="grillTemperature">
+              BBQ / smoker (°C)
+            </label>
+            <input
+              id="grillTemperature"
+              type="number"
+              min={40}
+              max={400}
+              value={grillTemperature}
+              onChange={(e) => setGrillTemperature(e.target.value)}
+              className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+              placeholder="120"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-cream/60 mb-1" htmlFor="targetTemperature">
+              Kerntemperatuur (°C)
+            </label>
+            <input
+              id="targetTemperature"
+              type="number"
+              min={1}
+              max={150}
+              value={targetTemperature}
+              onChange={(e) => setTargetTemperature(e.target.value)}
+              className="w-full rounded-md bg-surface border border-line px-3 py-2 outline-none focus:border-flame"
+              placeholder="54"
+            />
+          </div>
+        </div>
+      </fieldset>
 
       <div>
         <p className="text-sm text-cream/60 mb-2">Vindbaarheid</p>
