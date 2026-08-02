@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.7 seconds
-Output:
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth/AuthProvider'
 import { NotificationProvider } from './lib/notifications/NotificationProvider'
