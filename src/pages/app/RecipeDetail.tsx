@@ -173,6 +173,15 @@ export default function RecipeDetail() {
 
       {recipe.description && <p className="text-cream/70 mb-5">{recipe.description}</p>}
 
+      {isOwner && (
+        <Link
+          to={`/app/moment/nieuw?recept=${recipe.forked_from_recipe_id ?? recipe.id}`}
+          className="print:hidden mb-5 inline-flex items-center rounded-md border border-flame/50 px-4 py-2 text-sm font-semibold text-flame transition-colors hover:bg-flame hover:text-ink"
+        >
+          🔥 Ik heb dit gemaakt
+        </Link>
+      )}
+
       <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-cream/70">
         {recipe.rating != null && <StarRating value={recipe.rating} size="md" />}
         {recipe.cook_time_minutes != null && <span>{recipe.cook_time_minutes} min</span>}
