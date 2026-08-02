@@ -160,7 +160,7 @@ function LeaderboardWidget() {
         MAANDRANGLIJST
       </p>
       <p className="text-xs mt-1 text-cream/50">Bekijk jouw positie tussen de chefs die je volgt.</p>
-      <span className="inline-block text-xs font-semibold text-flame mt-3">Bekijk leaderboard â†’</span>
+      <span className="inline-block text-xs font-semibold text-flame mt-3">Bekijk leaderboard →</span>
     </NavLink>
   )
 }
@@ -199,14 +199,14 @@ function NewMenu() {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2"
           >
-            ðŸ”¥ BBQ moment loggen
+            🔥 BBQ moment loggen
           </NavLink>
           <NavLink
             to="/app/video/nieuw"
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
           >
-            ðŸ“º Video delen
+            📺 Video delen
           </NavLink>
           <NavLink
             to="/app/kookboek/nieuw"
@@ -271,7 +271,7 @@ function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-sm text-cream hover:bg-surface-2 border-t border-line"
           >
-            Feedback & ideeÃ«n
+            Feedback & ideeën
           </NavLink>
           <button
             type="button"
@@ -316,13 +316,13 @@ export default function AppShell() {
                   to="/app/moment/nieuw"
                   className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
                 >
-                  ðŸ”¥ Vuur aan
+                  🔥 Vuur aan
                 </NavLink>
                 <NavLink
                   to="/app/video/nieuw"
                   className="border border-line hover:border-cream/40 transition-colors text-cream text-sm font-semibold px-3 py-1.5 rounded-md"
                 >
-                  ðŸ“º Video
+                  📺 Video
                 </NavLink>
                 <NavLink
                   to="/app/kookboek/nieuw"
