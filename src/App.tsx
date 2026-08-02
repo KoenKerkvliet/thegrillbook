@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.7 seconds
+Output:
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth/AuthProvider'
 import { NotificationProvider } from './lib/notifications/NotificationProvider'
@@ -15,6 +18,7 @@ import ResetPassword from './pages/ResetPassword'
 import AppShell from './pages/app/AppShell'
 import Feed from './pages/app/Feed'
 import Kookboek from './pages/app/Kookboek'
+import Discover from './pages/app/Discover'
 import RecipeForm from './pages/app/RecipeForm'
 import RecipeDetail from './pages/app/RecipeDetail'
 import MomentForm from './pages/app/MomentForm'
@@ -81,6 +85,7 @@ function App() {
           >
             <Route index element={<AppIndex />} />
             <Route path="kookboek" element={<Kookboek />} />
+            <Route path="ontdekken" element={<Discover />} />
             <Route path="kookboek/nieuw" element={<RecipeForm />} />
             <Route path="kookboek/:id/bewerken" element={<RecipeForm />} />
             <Route path="recept/:id" element={<RecipeDetail />} />
