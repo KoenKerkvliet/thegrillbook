@@ -200,7 +200,7 @@ export default function Kookboek() {
     supabase
       .from('recipes')
       .select(
-        'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, visibility, original_owner_username, main_ingredient, technique, bbq_type, difficulty',
+        'id, title, cover_photo_url, cook_time_minutes, servings, rating, is_public, visibility, original_owner_username, main_ingredient, technique, bbq_type, difficulty, import_status',
       )
       .eq('owner_id', user.id)
       .order('created_at', { ascending: false })
