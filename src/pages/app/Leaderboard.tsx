@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { RankIcon } from '../../components/RankIcon'
 import { useAuth } from '../../lib/auth/useAuth'
 import { supabase } from '../../lib/supabaseClient'
+import { useFeatureFlag } from '../../lib/featureFlags'
 
 type LeaderboardRow = {
   user_id: string
@@ -19,6 +20,7 @@ const POSITION_LABELS = ['1', '2', '3']
 
 export default function Leaderboard() {
   const { user } = useAuth()
+  const { enabled, loaded } = useFeatureFlag('leaderboard')
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null)
 
   useEffect(() => {
@@ -30,6 +32,8 @@ export default function Leaderboard() {
       cancelled = true
     }
   }, [])
+
+  if (loaded && !enabled) return <Navigate to="/app" replace />
 
   const monthName = new Intl.DateTimeFormat('nl-NL', {
     month: 'long',
