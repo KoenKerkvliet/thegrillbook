@@ -85,8 +85,8 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
     return (
       <Link
         to={`/app/recept/${savedAsId}`}
-        aria-label="In je kookboek"
-        title="In je kookboek"
+        aria-label="Op je rooster"
+        title="Op je rooster"
         className="flex items-center justify-center w-9 h-9 rounded-md border border-flame/40 text-flame"
       >
         <span aria-hidden="true">✓</span>
@@ -99,8 +99,8 @@ export function SaveButton({ recipeId, initiallySavedAsId }: Props) {
       type="button"
       onClick={handleSave}
       disabled={busy}
-      aria-label="Opslaan in je eigen kookboek"
-      title="Opslaan in je eigen kookboek"
+      aria-label="Zet op je rooster"
+      title="Zet op je rooster"
       className="flex items-center justify-center w-9 h-9 rounded-md border border-line text-cream/70 hover:border-cream/40 transition-colors disabled:opacity-50"
     >
       <span aria-hidden="true">{busy ? '…' : '🔖'}</span>
