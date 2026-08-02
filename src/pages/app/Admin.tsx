@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/auth/useAuth'
 import { isAdminEmail } from '../../lib/admin'
 import { relativeTime, startOfThisWeek } from '../../lib/relativeTime'
+import { setFeatureFlag, useFeatureFlag } from '../../lib/featureFlags'
 
 type AdminUser = {
   id: string
@@ -49,6 +50,19 @@ const feedbackTypeLabels = {
   bug: 'Probleem',
   question: 'Vraag',
 } as const
+
+function LeaderboardToggle() {
+  const { enabled, loaded, setEnabled } = useFeatureFlag('leaderboard')
+  const [saving, setSaving] = useState(false)
+  async function toggle() {
+    setSaving(true)
+    const next = !enabled
+    const { error } = await setFeatureFlag('leaderboard', next)
+    if (!error) setEnabled(next)
+    setSaving(false)
+  }
+  return <section className="border border-line rounded-md bg-surface p-5"><h2 className="font-display text-2xl">Functies</h2><p className="text-sm text-cream/50 mt-1">Zet onderdelen aan wanneer de community er klaar voor is.</p><div className="mt-4 flex items-center justify-between gap-4"><div><p className="font-semibold">Maandranglijst</p><p className="text-xs text-cream/45 mt-1">Toont de leaderboard-pagina, navigatie en zijbalkkaart.</p></div><button type="button" disabled={!loaded || saving} onClick={toggle} className={`rounded-md px-4 py-2 text-sm font-semibold ${enabled ? 'bg-flame text-ink' : 'border border-line text-cream/70'}`}>{enabled ? 'Actief' : 'Verborgen'}</button></div></section>
+}
 
 function AdminFeedback() {
   const [items, setItems] = useState<FeedbackItem[] | null>(null)
@@ -491,6 +505,8 @@ export default function Admin() {
         <h1 className="font-display text-3xl mb-1">Admin</h1>
         <p className="text-sm text-cream/50">Accountbeheer voor BBQHeros.</p>
       </div>
+
+      <LeaderboardToggle />
 
       {error && <p className="text-sm text-flame">{error}</p>}
       {notice && <p className="text-sm text-cream/60">{notice}</p>}
