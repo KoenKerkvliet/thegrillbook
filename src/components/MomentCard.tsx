@@ -14,6 +14,7 @@ export type MomentCardData = {
   ownerPoints: number
   likeCount: number
   likedByMe: boolean
+  sourceRecipeTitle: string | null
 }
 
 type Props = {
@@ -63,8 +64,16 @@ export function MomentCard({ moment, isOwner, onDelete }: Props) {
         </div>
       )}
 
+      {moment.sourceRecipeTitle && (
+        <div className={moment.caption ? 'px-5 pt-5' : 'p-5'}>
+          <p className="text-xs font-semibold tracking-wide text-flame">
+            🔥 Gemaakt: {moment.sourceRecipeTitle}
+          </p>
+        </div>
+      )}
+
       {moment.caption && (
-        <div className="p-5">
+        <div className={moment.sourceRecipeTitle ? 'px-5 pb-5 pt-2' : 'p-5'}>
           <p
             className={
               moment.photo_url
