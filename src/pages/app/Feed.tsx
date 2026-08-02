@@ -319,6 +319,8 @@ export default function Feed() {
         created_at: string
         owner_id: string
         profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
+        source_recipe_id: string | null
+        source_recipe: { title: string } | null
       }> = []
       let videoRows: Array<{
         id: string
@@ -359,7 +361,7 @@ export default function Feed() {
       const { data: momentData } = await supabase
         .from('moments')
         .select(
-          'id, photo_url, caption, created_at, owner_id, profiles!moments_owner_id_fkey(username, display_name, avatar_url)',
+          'id, photo_url, caption, created_at, owner_id, source_recipe_id, source_recipe:recipes!moments_source_recipe_id_fkey(title), profiles!moments_owner_id_fkey(username, display_name, avatar_url)',
         )
         .in('owner_id', momentOwnerIds)
         .order('created_at', { ascending: false })
@@ -458,6 +460,7 @@ export default function Feed() {
             ownerPoints: ownerPointsMap.get(m.owner_id) ?? 0,
             likeCount: likesForMoment.length,
             likedByMe: likesForMoment.some((l) => l.user_id === user!.id),
+            sourceRecipeTitle: m.source_recipe?.title ?? null,
           },
         }
       })
